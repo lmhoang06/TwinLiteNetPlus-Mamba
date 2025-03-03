@@ -27,17 +27,17 @@ This table presents performance comparisons of models on the same tasks. The num
 
 | Model | Drivable Area mIoU (%) ↑ | Lane Accuracy (%) ↑ | Lane IoU (%) ↑ | FLOPS ↓ | #Params ↓ |
 |--------|----------------|----------------|--------------|----------------|----------------|
-| DeepLabV3+ (2018) | 90.9 | -- | 29.8 | 30.7G | 15.4M |
-| SegFormer (2021) | 92.3 | -- | 31.7 | 12.1G | 7.2M |
-| R-CNNP (2022) | 90.2 | -- | 24.0 | -- | -- |
-| YOLOP (2022) | 91.6 | -- | 26.5 | 8.11G | 5.53M |
-| IALaneNet (ResNet-18) (2023) | 90.54 | -- | 30.39 | 89.83G | 17.05M |
-| IALaneNet (ResNet-34) (2023) | 90.61 | -- | 30.46 | 139.46G | 27.16M |
-| IALaneNet (ConvNeXt-tiny) (2023) | 91.29 | -- | 31.48 | 96.52G | 18.35M |
-| IALaneNet (ConvNeXt-small) (2023) | 91.72 | -- | 32.53 | 200.07G | 39.97M |
-| YOLOv8 (multi) (2023) | 84.2 | 81.7 | 24.3 | -- | -- |
-| Sparse U-PDP (2023) | 91.5 | -- | 31.2 | -- | -- |
-| TwinLiteNet (2023) | 91.3 | 77.8 | 31.1 | 3.9G | 0.44M |
+| DeepLabV3+ | 90.9 | -- | 29.8 | 30.7G | 15.4M |
+| SegForme | 92.3 | -- | 31.7 | 12.1G | 7.2M |
+| R-CNNP | 90.2 | -- | 24.0 | -- | -- |
+| YOLOP | 91.6 | -- | 26.5 | 8.11G | 5.53M |
+| IALaneNet (ResNet-18) | 90.54 | -- | 30.39 | 89.83G | 17.05M |
+| IALaneNet (ResNet-34) | 90.61 | -- | 30.46 | 139.46G | 27.16M |
+| IALaneNet (ConvNeXt-tiny) | 91.29 | -- | 31.48 | 96.52G | 18.35M |
+| IALaneNet (ConvNeXt-small) | 91.72 | -- | 32.53 | 200.07G | 39.97M |
+| YOLOv8 (multi) | 84.2 | 81.7 | 24.3 | -- | -- |
+| Sparse U-PDP | 91.5 | -- | 31.2 | -- | -- |
+| TwinLiteNet | 91.3 | 77.8 | 31.1 | 3.9G | 0.44M |
 | **TwinLiteNet+ Nano** | 87.3 | 70.2 | 23.3 | **0.57G** | **0.03M** |
 | **TwinLiteNet+ Small** | 90.6 | 75.8 | 29.3 | 1.40G | 0.12M |
 | **TwinLiteNet+ Medium** | 92.0 | 79.1 | 32.3 | 4.63G | 0.48M |
@@ -49,3 +49,33 @@ This table presents performance comparisons of models on the same tasks. The num
 - "--" indicates unavailable values.
 
 This benchmark provides insights into the trade-offs between performance, computational cost, and model complexity for different segmentation models.
+
+## Requirement
+
+This codebase has been developed with python version 3.7, PyTorch 1.12+ and torchvision 0.13+
+```setup
+pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
+```
+or
+```setup
+conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.3 -c pytorch
+```
+See `requirements.txt` for additional dependencies and version requirements.
+```setup
+pip install -r requirements.txt
+```
+
+## Citation
+
+```BibTeX
+@article{che2024twinlitenetplus,
+      title={TwinLiteNetPlus: A Stronger Model for Real-time Drivable Area and Lane Segmentation}, 
+      author={Quang-Huy Che and Duc-Tri Le and Minh-Quan Pham and Vinh-Tiep Nguyen and Duc-Khai Lam},
+      year={2024},
+      eprint={2403.16958},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2403.16958}, 
+}
+```
+
