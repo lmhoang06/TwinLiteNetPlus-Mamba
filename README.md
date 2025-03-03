@@ -100,7 +100,7 @@ TwinLiteNetPlus is released under the [MIT Licence](LICENSE).
 Our work would not be complete without the wonderful work of the following authors:
 
 * [TwinLiteNet](https://github.com/chequanghuy/TwinLiteNet)
-* [Partial Class Activation Attention for Semantic Segmentation]([https://github.com/ultralytics/yolov5](https://github.com/PCAA))
+* [Partial Class Activation Attention for Semantic Segmentation](https://github.com/lsa1997/PCAA)
 
 ## Citation
 
