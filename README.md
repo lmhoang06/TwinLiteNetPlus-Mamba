@@ -29,9 +29,9 @@ Semantic segmentation is crucial for autonomous driving, particularly for Drivab
 
 ## Main Results
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/3d582b35-b93b-4347-8991-24bf815f8085" width=90%> <br>
-  Comparison of evaluation metrics mIoU (Drivable Area Segmentation) - IoU (Lane Segmentation) - GFLOPs of various models on the BDD100K dataset. The x-axis represents the number of GFLOPs of the model, the y-axis represents the mIoU data for the Drivable Area Segmentation task, and the radius of the circle indicates the accuracy for the Lane Segmentation task (the larger the radius, the higher the accuracy).
+<p align="left">
+  <img src="https://github.com/user-attachments/assets/3d582b35-b93b-4347-8991-24bf815f8085" width=50%> <br>
+  Comparison of evaluation metrics mIoU (Drivable Area Segmentation) - IoU (Lane Segmentation) - GFLOPs of various models on the BDD100K dataset.
 </p>
 
 | Model | Drivable Area mIoU (%) ↑ | Lane Accuracy (%) ↑ | Lane IoU (%) ↑ | FLOPS ↓ | #Params ↓ |
