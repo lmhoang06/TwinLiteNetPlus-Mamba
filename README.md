@@ -67,7 +67,7 @@ pip install -r requirements.txt
 
 
 ## Pre-trained Model
-You can get the pre-trained model from <a href="https://pan.baidu.com/s/1k7_M8vrgQCnlY-FlaA0g6Q">baidu</a> or <a href="https://drive.google.com/file/d/1dlwaElu0dQQdoEeJkuP2LKGx1TSCjE-z/view?usp=sharing">google</a>.
+You can get the pre-trained model from <a href="https://drive.google.com/drive/folders/1EqBzUw0b17aEumZmWYrGZmbx_XJqU-vz?usp=sharing">google</a>.
 
 ## Citation
 
