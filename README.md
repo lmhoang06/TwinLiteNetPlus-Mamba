@@ -34,6 +34,10 @@ Semantic segmentation is crucial for autonomous driving, particularly for Drivab
   Comparison of evaluation metrics mIoU (Drivable Area Segmentation) - IoU (Lane Segmentation) - GFLOPs of various models on the BDD100K dataset.
 </p>
 
+
+
+
+
 | Model | Drivable Area mIoU (%) ↑ | Lane Accuracy (%) ↑ | Lane IoU (%) ↑ | FLOPS ↓ | #Params ↓ |
 |--------|----------------|----------------|--------------|----------------|----------------|
 | DeepLabV3+ | 90.9 | -- | 29.8 | 30.7G | 15.4M |
