@@ -103,6 +103,12 @@ python train.py --config '{nano/small/medium/large}'
 python val.py --config '{nano/small/medium/large}' --weight 'pretrained/{nano/small/medium/large}.pth'
 ```
 
+## Demo
+
+```shell
+python demo.py --config '{nano/small/medium/large}' --weight 'pretrained/{nano/small/medium/large}.pth' --source 'pretrained/{images/videos}'
+```
+
 
 ## License
 
