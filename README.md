@@ -3,8 +3,8 @@
  </h1>
 
 [![Generic badge](https://img.shields.io/badge/License-MIT-<COLOR>.svg?style=for-the-badge)](https://github.com/chequanghuy/TwinLiteNetPlus/main/LICENSE) 
-[![PyTorch - Version](https://img.shields.io/badge/PYTORCH-1.12+-red?style=for-the-badge&logo=pytorch)](https://pytorch.org/get-started/locally/) 
-[![Python - Version](https://img.shields.io/badge/PYTHON-3.7+-red?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![PyTorch - Version](https://img.shields.io/badge/PYTORCH-1.8-red?style=for-the-badge&logo=pytorch)](https://pytorch.org/get-started/locally/) 
+[![Python - Version](https://img.shields.io/badge/PYTHON-3.8-red?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
 <br>
 
   Quang-Huy Che, Duc-Tri Le, Minh-Quan Pham, Vinh-Tiep Nguyen, Duc-Khai Lam
@@ -54,16 +54,20 @@ This benchmark provides insights into the trade-offs between performance, comput
 
 This codebase has been developed with python version 3.7, PyTorch 1.12+ and torchvision 0.13+
 ```setup
-pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
+pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 or
 ```setup
-conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.3 -c pytorch
+conda install pytorch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0 -c pytorch
 ```
 See `requirements.txt` for additional dependencies and version requirements.
 ```setup
 pip install -r requirements.txt
 ```
+
+
+## Pre-trained Model
+You can get the pre-trained model from <a href="https://pan.baidu.com/s/1k7_M8vrgQCnlY-FlaA0g6Q">baidu</a> or <a href="https://drive.google.com/file/d/1dlwaElu0dQQdoEeJkuP2LKGx1TSCjE-z/view?usp=sharing">google</a>.
 
 ## Citation
 
