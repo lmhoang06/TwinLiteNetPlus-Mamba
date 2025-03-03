@@ -52,7 +52,7 @@ This benchmark provides insights into the trade-offs between performance, comput
 
 ## Requirement
 
-This codebase has been developed with python version 3.7, PyTorch 1.12+ and torchvision 0.13+
+This codebase has been developed with python version 3..8, PyTorch 1.8.0 and torchvision 0.9.0
 ```setup
 pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
 ```
