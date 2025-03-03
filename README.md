@@ -7,12 +7,12 @@
 [![Python - Version](https://img.shields.io/badge/PYTHON-3.8-red?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
 <br>
 
-  Quang-Huy Che, Duc-Tri Le, Minh-Quan Pham, Vinh-Tiep Nguyen, Duc-Khai Lam
+  [Quang-Huy Che](https://scholar.google.com/citations?user=k7lUdFAAAAAJ&hl=vi&authuser=2), Duc-Tri Le, Minh-Quan Pham, Vinh-Tiep Nguyen, Duc-Khai Lam
 </div>
 
 ## Paper
 
-* If you find our work useful, please cite this paper: **TwinLiteNetPlus: A Stronger Model for Real-time Drivable Area and Lane Segmentation.** [paper](https://arxiv.org/abs/2403.16958)
+* If you find our work useful, please cite this paper: **TwinLiteNetPlus: A Stronger Model for Real-time Drivable Area and Lane Segmentation.** [![arXiv](https://img.shields.io/badge/arXiv-2502.12524-b31b1b.svg)](https://arxiv.org/abs/2403.16958)
 
 <details>
   <summary>
