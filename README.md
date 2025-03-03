@@ -77,17 +77,14 @@ We recommend the dataset directory structure to be the following:
 
 ```
 # The id represent the correspondence relation
-├─dataset root
+├─bdd100k
 │ ├─images
 │ │ ├─train
 │ │ ├─val
-│ ├─det_annotations
+│ ├─drivable_are_annotations
 │ │ ├─train
 │ │ ├─val
-│ ├─da_seg_annotations
-│ │ ├─train
-│ │ ├─val
-│ ├─ll_seg_annotations
+│ ├─lane_line_annotations
 │ │ ├─train
 │ │ ├─val
 ```
