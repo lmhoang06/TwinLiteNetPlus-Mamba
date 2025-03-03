@@ -13,3 +13,39 @@
 ## Paper
 
 * If you find our work useful, please cite this paper: **TwinLiteNetPlus: A Stronger Model for Real-time Drivable Area and Lane Segmentation.** [paper](https://arxiv.org/abs/2403.16958)
+
+<details>
+  <summary>
+  <font size="+1">Abstract</font>
+  </summary>
+Semantic segmentation is crucial for autonomous driving, particularly for Drivable Area and Lane Segmentation, ensuring safety and navigation. To address the high computational costs of current state-of-the-art (SOTA) models, this paper introduces TwinLiteNetPlus (TwinLiteNet+), a model adept at balancing efficiency and accuracy. TwinLiteNet+ incorporates standard and depth-wise separable dilated convolutions, reducing complexity while maintaining high accuracy. It is available in four configurations, from the robust 1.94 million-parameter TwinLiteNetPlus_Large to the ultra-compact 34K-parameter TwinLiteNetPlus_nano. Notably, TwinLiteNetPlus_Large attains a 92.9% mIoU for Drivable Area Segmentation and a 34.2% IoU for Lane Segmentation. These results notably outperform those of current SOTA models while requiring a computational cost that is approximately 11 times lower in terms of Floating Point Operations (FLOPs) compared to the existing SOTA model. Extensively tested on various embedded devices, TwinLiteNet+ demonstrates promising latency and power efficiency, underscoring its suitability for real-world autonomous vehicle applications.
+</details>
+
+## Main Results
+
+This table presents performance comparisons of models on the same tasks. The number in parentheses after each model represents the year of publication.
+
+| Model | Drivable Area mIoU (%) ↑ | Lane Accuracy (%) ↑ | Lane IoU (%) ↑ | FLOPS ↓ | #Params ↓ |
+|--------|----------------|----------------|--------------|----------------|----------------|
+| DeepLabV3+ (2018) | 90.9 | -- | 29.8 | 30.7G | 15.4M |
+| SegFormer (2021) | 92.3 | -- | 31.7 | 12.1G | 7.2M |
+| R-CNNP (2022) | 90.2 | -- | 24.0 | -- | -- |
+| YOLOP (2022) | 91.6 | -- | 26.5 | 8.11G | 5.53M |
+| IALaneNet (ResNet-18) (2023) | 90.54 | -- | 30.39 | 89.83G | 17.05M |
+| IALaneNet (ResNet-34) (2023) | 90.61 | -- | 30.46 | 139.46G | 27.16M |
+| IALaneNet (ConvNeXt-tiny) (2023) | 91.29 | -- | 31.48 | 96.52G | 18.35M |
+| IALaneNet (ConvNeXt-small) (2023) | 91.72 | -- | 32.53 | 200.07G | 39.97M |
+| YOLOv8 (multi) (2023) | 84.2 | 81.7 | 24.3 | -- | -- |
+| Sparse U-PDP (2023) | 91.5 | -- | 31.2 | -- | -- |
+| TwinLiteNet (2023) | 91.3 | 77.8 | 31.1 | 3.9G | 0.44M |
+| **TwinLiteNet+ Nano** | 87.3 | 70.2 | 23.3 | **0.57G** | **0.03M** |
+| **TwinLiteNet+ Small** | 90.6 | 75.8 | 29.3 | 1.40G | 0.12M |
+| **TwinLiteNet+ Medium** | 92.0 | 79.1 | 32.3 | 4.63G | 0.48M |
+| **TwinLiteNet+ Large** | **92.9** | **81.9** | **34.2** | 17.58G | 1.94M |
+
+**Notes:**
+- ↑ indicates higher values are better.
+- ↓ indicates lower values are better.
+- "--" indicates unavailable values.
+
+This benchmark provides insights into the trade-offs between performance, computational cost, and model complexity for different segmentation models.
