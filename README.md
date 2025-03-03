@@ -21,6 +21,12 @@
 Semantic segmentation is crucial for autonomous driving, particularly for Drivable Area and Lane Segmentation, ensuring safety and navigation. To address the high computational costs of current state-of-the-art (SOTA) models, this paper introduces TwinLiteNetPlus (TwinLiteNet+), a model adept at balancing efficiency and accuracy. TwinLiteNet+ incorporates standard and depth-wise separable dilated convolutions, reducing complexity while maintaining high accuracy. It is available in four configurations, from the robust 1.94 million-parameter TwinLiteNetPlus_Large to the ultra-compact 34K-parameter TwinLiteNetPlus_nano. Notably, TwinLiteNetPlus_Large attains a 92.9% mIoU for Drivable Area Segmentation and a 34.2% IoU for Lane Segmentation. These results notably outperform those of current SOTA models while requiring a computational cost that is approximately 11 times lower in terms of Floating Point Operations (FLOPs) compared to the existing SOTA model. Extensively tested on various embedded devices, TwinLiteNet+ demonstrates promising latency and power efficiency, underscoring its suitability for real-world autonomous vehicle applications.
 </details>
 
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a4074e22-a5f4-462a-80aa-5c6f5f75fcb5" width=90%> <br>
+  Comparison with popular methods in terms of latency-accuracy (left) and FLOPs-accuracy (right) trade-offs
+</p>
+
 ## Main Results
 
 This table presents performance comparisons of models on the same tasks. The number in parentheses after each model represents the year of publication.
