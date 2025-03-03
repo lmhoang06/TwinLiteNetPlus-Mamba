@@ -7,7 +7,7 @@
 [![Python - Version](https://img.shields.io/badge/PYTHON-3.8-red?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
 <br>
 
-  [Quang-Huy Che](https://scholar.google.com/citations?user=k7lUdFAAAAAJ&hl=vi&authuser=2), Duc-Tri Le, Minh-Quan Pham, Vinh-Tiep Nguyen, Duc-Khai Lam
+  [Quang-Huy Che](https://scholar.google.com/citations?user=k7lUdFAAAAAJ&hl=vi&authuser=2), [Duc-Tri Le](https://github.com/DucTriCE?tab=repositories), Minh-Quan Pham, Vinh-Tiep Nguyen, Duc-Khai Lam
 </div>
 
 ## Paper
