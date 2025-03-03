@@ -69,6 +69,31 @@ pip install -r requirements.txt
 ## Pre-trained Model
 You can get the pre-trained model from <a href="https://drive.google.com/drive/folders/1EqBzUw0b17aEumZmWYrGZmbx_XJqU-vz?usp=sharing">google</a>.
 
+
+## Dataset
+For BDD100K: [imgs](https://bdd-data.berkeley.edu/), [da_seg_annot](https://drive.google.com/file/d/1xy_DhUZRHR8yrZG3OwTQAHhYTnXn7URv/view?usp=sharing), [ll_seg_annot](https://drive.google.com/file/d/1lDNTPIQj_YLNZVkksKM25CvCHuquJ8AP/view?usp=sharing)
+
+We recommend the dataset directory structure to be the following:
+
+```
+# The id represent the correspondence relation
+├─dataset root
+│ ├─images
+│ │ ├─train
+│ │ ├─val
+│ ├─det_annotations
+│ │ ├─train
+│ │ ├─val
+│ ├─da_seg_annotations
+│ │ ├─train
+│ │ ├─val
+│ ├─ll_seg_annotations
+│ │ ├─train
+│ │ ├─val
+```
+
+Update the your dataset path in the `./BDD100K.py`.
+
 ## Citation
 
 ```BibTeX
