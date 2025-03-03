@@ -91,6 +91,19 @@ We recommend the dataset directory structure to be the following:
 
 Update the your dataset path in the `./BDD100K.py`.
 
+## Training
+
+```shell
+python train.py --config '{nano/small/medium/large}'
+```
+
+## Evaluation
+
+```shell
+python val.py --config '{nano/small/medium/large}' --weight 'pretrained/{nano/small/medium/large}.pth'
+```
+
+
 ## License
 
 TwinLiteNetPlus is released under the [MIT Licence](LICENSE).
