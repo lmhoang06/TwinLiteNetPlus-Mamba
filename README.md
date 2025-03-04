@@ -24,7 +24,7 @@ Semantic segmentation is crucial for autonomous driving, particularly for Drivab
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/a4074e22-a5f4-462a-80aa-5c6f5f75fcb5" width=90%> <br>
-  Comparison with popular methods in terms of latency-accuracy (left) and FLOPs-accuracy (right) trade-offs
+
 </p>
 
 ## Main Results
