@@ -2,6 +2,8 @@
 <h1> TwinLiteNetPlus: A Stronger Model for Real-time Drivable Area and Lane Segmentation
  </h1>
 
+
+
 [![Generic badge](https://img.shields.io/badge/License-MIT-<COLOR>.svg?style=for-the-badge)](https://github.com/chequanghuy/TwinLiteNetPlus/main/LICENSE) 
 [![PyTorch - Version](https://img.shields.io/badge/PYTORCH-1.8-red?style=for-the-badge&logo=pytorch)](https://pytorch.org/get-started/locally/) 
 [![Python - Version](https://img.shields.io/badge/PYTHON-3.8-red?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
@@ -9,6 +11,10 @@
 
   [Quang-Huy Che](https://scholar.google.com/citations?user=k7lUdFAAAAAJ&hl=vi&authuser=2), [Duc-Tri Le](https://github.com/DucTriCE?tab=repositories), Minh-Quan Pham, Vinh-Tiep Nguyen, Duc-Khai Lam
 </div>
+
+
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/twinlitenetplus-a-stronger-model-for-real/lane-detection-on-bdd100k-val)](https://paperswithcode.com/sota/lane-detection-on-bdd100k-val?p=twinlitenetplus-a-stronger-model-for-real)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/twinlitenetplus-a-stronger-model-for-real/drivable-area-detection-on-bdd100k-val)](https://paperswithcode.com/sota/drivable-area-detection-on-bdd100k-val?p=twinlitenetplus-a-stronger-model-for-real)
 
 ## Paper
 
