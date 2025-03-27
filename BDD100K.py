@@ -138,6 +138,107 @@ def random_perspective(combination,  degrees=10, translate=.1, scale=.1, shear=1
     combination = (img, drivable, line)
     return combination
 
+class DatasetOneTask(torch.utils.data.Dataset):
+    '''
+    Class to load the dataset
+    '''
+    def __init__(self, hyp, valid=False, transform = None,task = None):
+        '''
+        :param imList: image list (Note that these lists have been processed and pickled using the loadData.py)
+        :param labelList: label list (Note that these lists have been processed and pickled using the loadData.py)
+        :param transform: Type of transformation. SEe Transforms.py for supported transformations
+        '''
+        self.transform = transform
+        self.degrees = hyp["degrees"]
+        self.translate = hyp["translate"]
+        self.scale = hyp["scale"]
+        self.shear = hyp["shear"]
+        self.hgain = hyp["hgain"]
+        self.sgain = hyp["sgain"]
+        self.vgain = hyp["vgain"]
+        self.Random_Crop = A.RandomCrop(width=hyp["width_crop"], height=hyp["height_crop"])
+
+        self.prob_perspective = hyp["prob_perspective"]
+        self.prob_flip = hyp["prob_flip"]
+        self.prob_hsv = hyp["prob_hsv"]
+        self.prob_bilateral = hyp["prob_bilateral"]
+        self.prob_gaussian = hyp["prob_gaussian"]
+        self.prob_crop = hyp["prob_crop"]
+
+        self.task = task
+        
+        self.Tensor = transforms.ToTensor()
+        self.valid=valid
+        if valid:
+            self.root='../bdd100k/images/val'
+            self.names=os.listdir(self.root)
+        else:
+            self.root='../bdd100k/images/train'
+            self.names=os.listdir(self.root)
+
+    def __len__(self):
+        return len(self.names)
+
+    def __getitem__(self, idx):
+        '''
+
+        :param idx: Index of the image file
+        :return: returns the image and corresponding label file.
+        '''
+        W_=640
+        H_=384
+        image_name=os.path.join(self.root,self.names[idx])
+
+        image = cv2.imread(image_name)
+        if self.task == "DA":
+            label = cv2.imread(image_name.replace("images","drivable_area_annotations").replace("jpg","png"), 0)
+        if self.task == "LL":
+            label = cv2.imread(image_name.replace("images","lane_line_annotations").replace("jpg","png"), 0)
+        
+        if not self.valid:
+            if random.random() < self.prob_perspective:
+                combination = (image, label, label)
+                (image, label, _)= random_perspective(
+                    combination=combination,
+                    degrees=self.degrees,
+                    translate=self.translate,
+                    scale=self.scale,
+                    shear=self.shear
+                )
+            if random.random() < self.prob_hsv:
+                augment_hsv(image, self.hgain, self.sgain, self.vgain)
+            if random.random() < self.prob_flip:
+                image = np.fliplr(image)
+                label = np.fliplr(label)
+            
+            if random.random() < self.prob_bilateral:
+                image = RandomBilateralBlur(image)
+            if random.random() < self.prob_gaussian:
+                image = RandomGaussianBlur(image)
+            if random.random() < self.prob_crop:
+                masks = np.stack([label, label],axis=2)
+                transformed = self.Random_Crop(image=image, mask=masks)
+                image = transformed['image']
+                labels = transformed['mask']
+                label = labels[:,:,0]
+
+            image = letterbox(image, (H_, W_))
+        else:
+            image = letterbox(image, (H_, W_))
+
+        label = cv2.resize(label, (W_, 360))
+        
+        _,seg_b = cv2.threshold(label,1,255,cv2.THRESH_BINARY_INV)
+        _,seg = cv2.threshold(label,1,255,cv2.THRESH_BINARY)
+
+        seg = self.Tensor(seg)
+        seg_b = self.Tensor(seg_b)
+        seg_out = torch.stack((seg_b[0], seg[0]),0)
+        image = np.array(image)
+        image = image[:, :, ::-1].transpose(2, 0, 1)
+        image = np.ascontiguousarray(image)
+
+        return image_name,torch.from_numpy(image),seg_out
 
 class Dataset(torch.utils.data.Dataset):
     '''
