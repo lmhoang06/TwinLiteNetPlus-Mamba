@@ -8,6 +8,40 @@ from typing import Optional, List
 from functools import partial
 from const import *
 
+class SigleLoss(nn.Module):
+    '''
+    This file defines a cross entropy loss for 2D images
+    '''
+    def __init__(self, hyp, task=None):
+        '''
+        :param weight: 1D weight vector to deal with the class-imbalance
+        '''
+        super().__init__()
+
+        alpha1, gamma1, alpha2, gamma2, alpha3, gamma3 = hyp["alpha1"], hyp["gamma1"], hyp["alpha2"], hyp["gamma2"], hyp["alpha3"], hyp["gamma3"]
+
+        if task=="DA":
+            self.seg_tver = TverskyLoss(mode="multiclass", alpha=alpha1, beta=1-alpha1, gamma=gamma1, from_logits=True)
+        if task=="LL":
+            self.seg_tver = TverskyLoss(mode="multiclass", alpha=alpha2, beta=1-alpha2, gamma=gamma2, from_logits=True)
+        self.seg_focal = FocalLossSeg(mode="multiclass", alpha=alpha3, gamma=gamma3)
+
+
+
+    def forward(self, outputs, targets):
+        
+
+        out=outputs[:,:,12:-12]
+
+        _,seg= torch.max(targets, 1)
+        seg=seg.cuda()
+
+
+        tversky_loss = self.seg_tver(out, seg)
+        focal_loss = self.seg_focal(out, seg)
+
+        loss = focal_loss+tversky_loss
+        return focal_loss.item(),tversky_loss.item(),loss
 
 class TotalLoss(nn.Module):
     '''

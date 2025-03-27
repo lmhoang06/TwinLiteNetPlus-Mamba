@@ -440,6 +440,46 @@ class UpConvBlock(nn.Module):
         x = self.conv2(x)
         return x
 
+class SingleLiteNetPlus(nn.Module):
+    '''
+    This class defines the ESPNet network
+    '''
+
+    def __init__(self, args=None):
+
+        super().__init__()
+        chanel_img = cfg.chanel_img
+        model_cfg = cfg.sc_ch_dict[args.config] 
+        self.encoder = Encoder(args.config)
+
+
+        self.caam = CAAM(feat_in=cfg.sc_ch_dict[args.config]['chanels'][2], num_classes=cfg.sc_ch_dict[args.config]['chanels'][2],bin_size =(2,4), norm_layer=nn.BatchNorm2d)
+        self.conv_caam = ConvBatchnormRelu(cfg.sc_ch_dict[args.config]['chanels'][2],cfg.sc_ch_dict[args.config]['chanels'][1])
+
+        self.up_1 = UpConvBlock(cfg.sc_ch_dict[args.config]['chanels'][1],cfg.sc_ch_dict[args.config]['chanels'][0]) # out: Hx4, Wx4
+        self.up_2 = UpConvBlock(cfg.sc_ch_dict[args.config]['chanels'][0],8) #out: Hx2, Wx2
+        self.out = UpConvBlock(8,2,last=True)
+
+
+    def forward(self, input):
+        '''
+        :param input: RGB image
+        :return: transformed feature map
+        '''
+        out_encoder,inp1,inp2=self.encoder(input)
+        #visualize_feature_map_subset(out_encoder, "outencoder", 128)
+
+        out_caam=self.caam(out_encoder)
+        out_caam=self.conv_caam(out_caam)
+
+
+        out=self.up_1(out_caam,inp2)
+        out=self.up_2(out,inp1)
+        out=self.out(out)
+
+
+        return out
+
 class TwinLiteNetPlus(nn.Module):
     '''
     This class defines the ESPNet network

@@ -167,6 +167,55 @@ def val(val_loader = None, model = None, half = False, args=None):
     return da_segment_result,ll_segment_result
 
 
+@torch.no_grad()
+def val_one(val_loader = None, model = None, half = False, args=None):
+
+    model.eval()
+
+    RE=SegmentationMetric(2)
+
+    acc_seg = AverageMeter()
+    IoU_seg = AverageMeter()
+    mIoU_seg = AverageMeter()
+
+    total_batches = len(val_loader)
+    pbar = enumerate(val_loader)
+    if args.verbose:
+        pbar = tqdm(pbar, total=total_batches)
+    for i, (_,input, target) in pbar:
+        input = input.cuda().half() / 255.0 if half else input.cuda().float() / 255.0
+        
+        input_var = input
+        target_var = target
+
+        # run the mdoel
+        with torch.no_grad():
+            output = model(input_var)
+
+
+
+
+        _,predict=torch.max(output, 1)
+        predict = predict[:,12:-12]
+        _,gt=torch.max(target, 1)
+        
+        RE.reset()
+        RE.addBatch(predict.cpu(), gt.cpu())
+
+        acc = RE.lineAccuracy()
+        IoU = RE.IntersectionOverUnion()
+        mIoU = RE.meanIntersectionOverUnion()
+
+        acc_seg.update(acc,input.size(0))
+        IoU_seg.update(IoU,input.size(0))
+        mIoU_seg.update(mIoU,input.size(0))
+
+
+    segment_result = (acc_seg.avg,IoU_seg.avg,mIoU_seg.avg)
+    
+    return segment_result
+
+
 def save_checkpoint(state, filenameCheckpoint='checkpoint.pth.tar'):
     torch.save(state, filenameCheckpoint)
 
