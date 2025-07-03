@@ -36,7 +36,7 @@ Semantic segmentation is crucial for autonomous driving, particularly for Drivab
 ## Main Results
 
 <p align="left">
-  <img src="https://github.com/user-attachments/assets/3d582b35-b93b-4347-8991-24bf815f8085" width=50%> <br>
+  <img src="https://github.com/user-attachments/files/21034930/arch-Trang-1.pdf" width=50%> <br>
   Comparison of evaluation metrics mIoU (Drivable Area Segmentation) - IoU (Lane Segmentation) - GFLOPs of various models on the BDD100K dataset.
 </p>
 
