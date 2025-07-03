@@ -29,7 +29,7 @@ Semantic segmentation is crucial for autonomous driving, particularly for Drivab
 
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/12aa4116-1c47-4688-9d7a-2ae0e995654f" width=90%> <br>
+  <img src="https://github.com/user-attachments/assets/33418dc9-50a6-4c4b-8206-b1725d2f034e" width=90%> <br>
 
 </p>
 
