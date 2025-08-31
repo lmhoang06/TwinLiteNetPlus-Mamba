@@ -1,5 +1,5 @@
 <div align="center">
-<h1> TwinLiteNetPlus: A Stronger Model for Real-time Drivable Area and Lane Segmentation
+<h1> TwinLiteNet+: An Enhanced Multi-Task Segmentation Model for Autonomous Driving
  </h1>
 
 
@@ -13,12 +13,13 @@
 </div>
 
 
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/twinlitenetplus-a-stronger-model-for-real/lane-detection-on-bdd100k-val)](https://paperswithcode.com/sota/lane-detection-on-bdd100k-val?p=twinlitenetplus-a-stronger-model-for-real)
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/twinlitenetplus-a-stronger-model-for-real/drivable-area-detection-on-bdd100k-val)](https://paperswithcode.com/sota/drivable-area-detection-on-bdd100k-val?p=twinlitenetplus-a-stronger-model-for-real)
 
-## Paper
 
-* If you find our work useful, please cite this paper: **TwinLiteNetPlus: A Stronger Model for Real-time Drivable Area and Lane Segmentation.** [![arXiv](https://img.shields.io/badge/arXiv-2502.12524-b31b1b.svg)](https://arxiv.org/abs/2403.16958)
+## 📢 Publication
+
+We are pleased to announce that our paper has been **accepted for publication** in the journal *Computers and Electrical Engineering* (Elsevier). 
+The final version will be available soon.
+
 
 <details>
   <summary>
@@ -151,14 +152,12 @@ TwinLiteNetPlus is released under the [MIT Licence](LICENSE).
 ## Citation
 
 ```BibTeX
-@article{che2024twinlitenetplus,
-      title={TwinLiteNetPlus: A Stronger Model for Real-time Drivable Area and Lane Segmentation}, 
+@article{che2025twinlitenetplus,
+      title={TwinLiteNet+: An Enhanced Multi-Task Segmentation Model for Autonomous Driving}, 
       author={Quang-Huy Che and Duc-Tri Le and Minh-Quan Pham and Vinh-Tiep Nguyen and Duc-Khai Lam},
-      year={2024},
-      eprint={2403.16958},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2403.16958}, 
+      year={2025},
+      journal={Computers and Electrical Engineering}
+
 }
 ```
 
