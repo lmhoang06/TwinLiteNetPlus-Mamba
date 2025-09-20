@@ -153,14 +153,14 @@ TwinLiteNetPlus is released under the [MIT Licence](LICENSE).
 
 ```BibTeX
 @article{CHE2025110694,
-title = {TwinLiteNet+: An enhanced multi-task segmentation model for autonomous driving},
-journal = {Computers and Electrical Engineering},
-volume = {128},
-pages = {110694},
-year = {2025},
-issn = {0045-7906},
-doi = {https://doi.org/10.1016/j.compeleceng.2025.110694},
-url = {https://www.sciencedirect.com/science/article/pii/S0045790625006378}
+     title = {TwinLiteNet+: An enhanced multi-task segmentation model for autonomous driving},
+     journal = {Computers and Electrical Engineering},
+     volume = {128},
+     pages = {110694},
+     year = {2025},
+     issn = {0045-7906},
+     doi = {https://doi.org/10.1016/j.compeleceng.2025.110694},
+     url = {https://www.sciencedirect.com/science/article/pii/S0045790625006378}
 }
 ```
 
