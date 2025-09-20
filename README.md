@@ -1,4 +1,4 @@
-<div align="center">
+<img width="468" height="143" alt="image" src="https://github.com/user-attachments/assets/3cd59e83-7625-4ba3-8f1a-e82f5d766ac9" /><div align="center">
 <h1> TwinLiteNet+: An Enhanced Multi-Task Segmentation Model for Autonomous Driving
  </h1>
 
@@ -152,12 +152,15 @@ TwinLiteNetPlus is released under the [MIT Licence](LICENSE).
 ## Citation
 
 ```BibTeX
-@article{che2025twinlitenetplus,
-      title={TwinLiteNet+: An Enhanced Multi-Task Segmentation Model for Autonomous Driving}, 
-      author={Quang-Huy Che and Duc-Tri Le and Minh-Quan Pham and Vinh-Tiep Nguyen and Duc-Khai Lam},
-      year={2025},
-      journal={Computers and Electrical Engineering}
-
+@article{CHE2025110694,
+title = {TwinLiteNet+: An enhanced multi-task segmentation model for autonomous driving},
+journal = {Computers and Electrical Engineering},
+volume = {128},
+pages = {110694},
+year = {2025},
+issn = {0045-7906},
+doi = {https://doi.org/10.1016/j.compeleceng.2025.110694},
+url = {https://www.sciencedirect.com/science/article/pii/S0045790625006378}
 }
 ```
 
