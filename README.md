@@ -1,4 +1,4 @@
-<img width="468" height="143" alt="image" src="https://github.com/user-attachments/assets/3cd59e83-7625-4ba3-8f1a-e82f5d766ac9" /><div align="center">
+
 <h1> TwinLiteNet+: An Enhanced Multi-Task Segmentation Model for Autonomous Driving
  </h1>
 
