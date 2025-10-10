@@ -2,14 +2,13 @@ import torch
 import torch.nn as nn
 import numpy as np
 import torch.nn.functional as F
-import sys
 from model import config as cfg 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from torch.nn import Module, Conv2d, Parameter, Softmax
-import cv2
-import os
-from .encoder import Encoder as Encoder_VMamba
+from .encoder import Encoder
+from .encoder import Encoder_V1 as Encoder_VMamba
 from .encoder import Encoder_V2 as Encoder_VMamba_V2
+from .encoder import Encoder_V3 as Encoder_VMamba_V3
 
 
 
@@ -184,233 +183,6 @@ class ConvBatchnormRelu(nn.Module):
 #         output = self.conv(input)
 #         return output
 
-class DilatedConv(nn.Module):
-    '''
-    This class defines the dilated convolution.
-    '''
-
-    def __init__(self, nIn, nOut, kSize, stride=1, d=1, groups=1):
-        '''
-        :param nIn: number of input channels
-        :param nOut: number of output channels
-        :param kSize: kernel size
-        :param stride: optional stride rate for down-sampling
-        :param d: optional dilation rate
-        '''
-        super().__init__()
-        padding = int((kSize - 1) / 2) * d
-        self.conv = nn.Conv2d(nIn, nOut,kSize, stride=stride, padding=padding, bias=False,
-                              dilation=d, groups=groups)
-
-    def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: transformed feature map
-        '''
-        output = self.conv(input)
-        return output
-
-class BatchnormRelu(nn.Module):
-    '''
-        This class groups the batch normalization and PReLU activation
-    '''
-    def __init__(self, nOut):
-        '''
-        :param nOut: output feature maps
-        '''
-        super().__init__()
-        self.nOut=nOut
-        self.bn = nn.BatchNorm2d(nOut, eps=1e-03)
-        self.act = nn.PReLU(nOut)
-
-    def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: normalized and thresholded feature map
-        '''
-        output = self.bn(input)
-        output = self.act(output)
-        return output
-
-
-class DepthwiseSeparableConv(nn.Module):
-    def __init__(self, nin, nout, kernel_size=3, stride=1, dilation=1):
-        super(DepthwiseSeparableConv, self).__init__()
-        padding = int((kernel_size - 1) / 2) * dilation
-        self.depthwise = nn.Conv2d(nin, nin, kernel_size, stride, padding, dilation, groups=nin, bias=False)
-        self.pointwise = nn.Conv2d(nin, nout, 1, 1, 0, 1, 1, bias=False)
-
-    def forward(self, x):
-        x = self.depthwise(x)
-        x = self.pointwise(x)
-        return x
-
-class StrideESP(nn.Module):
-    def __init__(self, nIn, nOut):
-        super().__init__()
-        n = int(nOut/5)
-        n1 = nOut - 4*n
-        self.c1 = DilatedConv(nIn, n, 3, 2)
-        self.d1 = DilatedConv(n, n1, 3, 1, 1)
-        self.d2 = DilatedConv(n, n, 3, 1, 2)
-        self.d4 = DilatedConv(n, n, 3, 1, 4)
-        self.d8 = DilatedConv(n, n, 3, 1, 8)
-        self.d16 = DilatedConv(n, n, 3, 1, 16)
-        self.bn = nn.BatchNorm2d(nOut, eps=1e-3)
-        self.act = nn.PReLU(nOut)
-
-    def forward(self, input):
-        output1 = self.c1(input)
-        d1 = self.d1(output1)
-        d2 = self.d2(output1)
-        d4 = self.d4(output1)
-        d8 = self.d8(output1)
-        d16 = self.d16(output1)
-
-        add1 = d2
-        add2 = add1 + d4
-        add3 = add2 + d8
-        add4 = add3 + d16
-
-        combine = torch.cat([d1, add1, add2, add3, add4],1)
-        output = self.bn(combine)
-        output = self.act(output)
-        return output
-
-
-
-
-class DepthwiseESP(nn.Module):
-    '''
-    This class defines the ESP block, which is based on the following principle
-        Reduce ---> Split ---> Transform --> Merge
-    '''
-    def __init__(self, nIn, nOut, add=True):
-        '''
-        :param nIn: number of input channels
-        :param nOut: number of output channels
-        :param add: if true, add a residual connection through identity operation. You can use projection too as
-                in ResNet paper, but we avoid to use it if the dimensions are not the same because we do not want to
-                increase the module complexity
-        '''
-        super().__init__()
-        n = max(int(nOut/5),1)
-        n1 = max(nOut - 4*n,1)
-        self.c1 = DepthwiseSeparableConv(nIn, n, 1, 1)
-        self.d1 = DepthwiseSeparableConv(n, n1, 3, 1, 1) # dilation rate of 2^0
-        self.d2 = DepthwiseSeparableConv(n, n, 3, 1, 2) # dilation rate of 2^1
-        self.d4 = DepthwiseSeparableConv(n, n, 3, 1, 4) # dilation rate of 2^2
-        self.d8 = DepthwiseSeparableConv(n, n, 3, 1, 8) # dilation rate of 2^3
-        self.d16 = DepthwiseSeparableConv(n, n, 3, 1, 16) # dilation rate of 2^4
-        self.bn = BatchnormRelu(nOut)
-        self.add = add
-
-    def forward(self, input):
-        '''
-        :param input: input feature map
-        :return: transformed feature map
-        '''
-        # reduce
-        output1 = self.c1(input)
-        # split and transform
-        d1 = self.d1(output1)
-        d2 = self.d2(output1)
-        d4 = self.d4(output1)
-        d8 = self.d8(output1)
-        d16 = self.d16(output1)
-        # heirarchical fusion for de-gridding
-        add1 = d2
-        add2 = add1 + d4
-        add3 = add2 + d8
-        add4 = add3 + d16
-        #merge
-        combine = torch.cat([d1, add1, add2, add3, add4], 1)
-        if self.add:
-            combine = input + combine
-        output = self.bn(combine)
-        return output
-
-class AvgDownsampler(nn.Module):
-    '''
-    This class projects the input image to the same spatial dimensions as the feature map.
-    For example, if the input image is 512 x512 x3 and spatial dimensions of feature map size are 56x56xF, then
-    this class will generate an output of 56x56x3
-    '''
-    def __init__(self, samplingTimes):
-        '''
-        :param samplingTimes: The rate at which you want to down-sample the image
-        '''
-        super().__init__()
-        self.pool = nn.ModuleList()
-        for i in range(0, samplingTimes):
-            #pyramid-based approach for down-sampling
-            self.pool.append(nn.AvgPool2d(3, stride=2, padding=1))
-
-    def forward(self, input):
-        '''
-        :param input: Input RGB Image
-        :return: down-sampled image (pyramid-based approach)
-        '''
-        for pool in self.pool:
-            input = pool(input)
-        return input
-
-
-class Encoder(nn.Module):
-    '''
-    This class defines the ESPNet-C network in the paper
-    '''
-    def __init__(self, config):
-        super().__init__()
-        chanel_img = cfg.chanel_img
-        model_cfg = cfg.sc_ch_dict[config] 
-        self.level1 = ConvBatchnormRelu(chanel_img, model_cfg['chanels'][0], stride = 2)
-        self.sample1 = AvgDownsampler(1)
-        self.sample2 = AvgDownsampler(2)
-
-        self.b1 = ConvBatchnormRelu(model_cfg['chanels'][0] + chanel_img,model_cfg['chanels'][1])
-        self.level2_0 = StrideESP(model_cfg['chanels'][1], model_cfg['chanels'][2])
-
-        self.level2 = nn.ModuleList()
-        for i in range(0, model_cfg['p']):
-            self.level2.append(DepthwiseESP(model_cfg['chanels'][2] , model_cfg['chanels'][2]))
-        self.b2 = ConvBatchnormRelu(model_cfg['chanels'][3] + chanel_img,model_cfg['chanels'][3] + chanel_img)
-
-        self.level3_0 = StrideESP(model_cfg['chanels'][3] + chanel_img, model_cfg['chanels'][3])
-        self.level3 = nn.ModuleList()
-        for i in range(0, model_cfg['q']):
-            self.level3.append(DepthwiseESP(model_cfg['chanels'][3] , model_cfg['chanels'][3]))
-        self.b3 = ConvBatchnormRelu(model_cfg['chanels'][4],model_cfg['chanels'][2])
-        
-    def forward(self, input):
-        '''
-        :param input: Receives the input RGB image
-        :return: the transformed feature map with spatial dimensions 1/8th of the input image
-        '''
-        output0 = self.level1(input)
-        inp1 = self.sample1(input)
-        inp2 = self.sample2(input)
-        output0_cat = self.b1(torch.cat([output0, inp1], 1))
-        output1_0 = self.level2_0(output0_cat) # down-sampled
-        
-        for i, layer in enumerate(self.level2):
-            if i==0:
-                output1 = layer(output1_0)
-            else:
-                output1 = layer(output1)
-
-        output1_cat = self.b2(torch.cat([output1,  output1_0, inp2], 1))
-        output2_0 = self.level3_0(output1_cat)
-        for i, layer in enumerate(self.level3):
-            if i==0:
-                output2 = layer(output2_0)
-            else:
-                output2 = layer(output2)
-        output2_cat=torch.cat([output2_0, output2], 1)
-        out_encoder = self.b3(output2_cat)
-        
-        return out_encoder,inp1,inp2
-
 class UpSimpleBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
@@ -529,6 +301,11 @@ class TwinLiteNetPlus(nn.Module):
 
 
         return out_da,out_ll
+
+class TwinLiteNetPlus_V3(TwinLiteNetPlus):
+    def __init__(self, args=None):
+        super().__init__(args)
+        self.encoder = Encoder_VMamba_V3(args.config)
 
 def netParams(model):
     return np.sum([np.prod(parameter.size()) for parameter in model.parameters()])
