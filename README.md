@@ -1,5 +1,7 @@
 
-<h1> TwinLiteNet+: An Enhanced Multi-Task Segmentation Model for Autonomous Driving
+<h2> Still in development </h2>
+
+<h1> TwinLiteNet+ - Mamba: A Mamba-CNN Hybrid Multi-Task Segmentation Model for Autonomous Driving
  </h1>
 
 
