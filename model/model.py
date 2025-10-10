@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 from torch.nn import Module, Conv2d, Parameter, Softmax
 import cv2
 import os
-
+from .encoder import Encoder as Encoder_VMamba
+from .encoder import Encoder_V2 as Encoder_VMamba_V2
 
 
 
@@ -490,7 +491,8 @@ class TwinLiteNetPlus(nn.Module):
         super().__init__()
         chanel_img = cfg.chanel_img
         model_cfg = cfg.sc_ch_dict[args.config] 
-        self.encoder = Encoder(args.config)
+        # self.encoder = Encoder(args.config)
+        self.encoder = Encoder_VMamba_V2(args.config)
         self.sigle_ll = False
         self.sigle_da = False
 

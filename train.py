@@ -6,6 +6,7 @@ import yaml
 import math
 from copy import deepcopy
 from argparse import ArgumentParser
+import csv
 
 from model.model import TwinLiteNetPlus
 from loss import TotalLoss
@@ -39,17 +40,33 @@ def train_net(args, hyp):
     num_gpus = torch.cuda.device_count()
     
     model = TwinLiteNetPlus(args)
+    # pretrained_dict = torch.load('./pretrained/small.pth')
+    # model_dict = model.state_dict()
+    # # Only keep keys that exist in both model and pretrained weights
+    # filtered_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
+    # model_dict.update(filtered_dict)
+    # model.load_state_dict(model_dict)
     # if num_gpus > 1:
     #     model = torch.nn.DataParallel(model)
     
     os.makedirs(args.savedir, exist_ok=True)  # Ensure save directory exists
+    metrics_csv_path = os.path.join(args.savedir, 'metrics.csv')
+    # Initialize CSV with header if it doesn't exist
+    if not os.path.exists(metrics_csv_path):
+        with open(metrics_csv_path, mode='w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                'epoch', 'lr', 'train_loss', 'train_focal_loss', 'train_tversky_loss',
+                'da_acc', 'da_iou', 'da_miou',
+                'll_acc', 'll_iou', 'll_miou'
+            ])
     
     trainLoader = torch.utils.data.DataLoader(
-        BDD100K.Dataset(hyp, valid=False),
+        BDD100K.Dataset(hyp, valid=False, cache_ratio=args.cache_ratio),
         batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
     
     valLoader = torch.utils.data.DataLoader(
-        BDD100K.Dataset(hyp, valid=True),
+        BDD100K.Dataset(hyp, valid=True, cache_ratio=args.cache_ratio),
         batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
     
     if cuda_available:
@@ -81,7 +98,7 @@ def train_net(args, hyp):
         else:
             print(f"=> No valid checkpoint found at '{args.resume}'")
     
-    scaler = torch.cuda.amp.GradScaler()
+    scaler = torch.amp.GradScaler(device='cuda')
     
     for epoch in range(start_epoch, args.max_epochs):
         model_file_name = os.path.join(args.savedir, f'model_{epoch}.pth')
@@ -91,13 +108,23 @@ def train_net(args, hyp):
         print(f"Learning rate: {lr}")
         
         model.train()
-        ema = train(args, trainLoader, model, criteria, optimizer, epoch, scaler, args.verbose, ema if use_ema else None)
+        ema, train_loss, train_focal_loss, train_tversky_loss = train(
+            args, trainLoader, model, criteria, optimizer, epoch, scaler, args.verbose, ema if use_ema else None
+        )
         
         model.eval()
         da_segment_results, ll_segment_results = val(valLoader, ema.ema if use_ema else model, args=args)
         
         print(f"Driving Area Segment: mIOU({da_segment_results[2]:.3f})")
         print(f"Lane Line Segment: Acc({ll_segment_results[0]:.3f}) IOU({ll_segment_results[1]:.3f})")
+        # Append metrics to CSV
+        with open(metrics_csv_path, mode='a', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                epoch, lr, f"{train_loss:.6f}", f"{train_focal_loss:.6f}", f"{train_tversky_loss:.6f}",
+                f"{da_segment_results[0]:.6f}", f"{da_segment_results[1]:.6f}", f"{da_segment_results[2]:.6f}",
+                f"{ll_segment_results[0]:.6f}", f"{ll_segment_results[1]:.6f}", f"{ll_segment_results[2]:.6f}"
+            ])
         
         torch.save(ema.ema.state_dict(), model_file_name) if use_ema else torch.save(model.state_dict(), model_file_name)
         
@@ -121,6 +148,8 @@ if __name__ == '__main__':
     parser.add_argument('--config', default='nano', help='Model configuration')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging')
     parser.add_argument('--ema', action='store_true', help='Use Exponential Moving Average (EMA)')
+    parser.add_argument('--accumulation_steps', type=int, default=1, help='Gradient accumulation steps')
+    parser.add_argument('--cache_ratio', type=float, default=0.0, help='Portion of dataset to cache in memory (0.0-1.0)')
     args = parser.parse_args()
     
     with open(args.hyp, errors='ignore') as f:

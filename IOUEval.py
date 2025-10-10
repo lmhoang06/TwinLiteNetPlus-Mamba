@@ -101,7 +101,8 @@ class SegmentationMetric(object):
         # IoU = TP / (TP + FP + FN)
         intersection = np.diag(self.confusionMatrix)
         union = np.sum(self.confusionMatrix, axis=1) + np.sum(self.confusionMatrix, axis=0) - np.diag(self.confusionMatrix)
-        IoU = intersection / union
+        # Avoid division by zero
+        IoU = np.divide(intersection, union, out=np.zeros_like(intersection), where=union!=0)
         IoU[np.isnan(IoU)] = 0
         mIoU = np.nanmean(IoU)
         return mIoU
@@ -109,7 +110,8 @@ class SegmentationMetric(object):
     def IntersectionOverUnion(self):
         intersection = np.diag(self.confusionMatrix)
         union = np.sum(self.confusionMatrix, axis=1) + np.sum(self.confusionMatrix, axis=0) - np.diag(self.confusionMatrix)
-        IoU = intersection / union
+        # Avoid division by zero
+        IoU = np.divide(intersection, union, out=np.zeros_like(intersection), where=union!=0)
         IoU[np.isnan(IoU)] = 0
         return IoU[1]
 

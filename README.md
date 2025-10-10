@@ -90,7 +90,7 @@ You can get the pre-trained model from <a href="https://drive.google.com/drive/f
 
 
 ## Dataset
-For BDD100K: [imgs](https://bdd-data.berkeley.edu/), [drivable_are_annotations](https://drive.google.com/file/d/1xy_DhUZRHR8yrZG3OwTQAHhYTnXn7URv/view?usp=sharing), [lane_line_annotations](https://drive.google.com/file/d/1lDNTPIQj_YLNZVkksKM25CvCHuquJ8AP/view?usp=sharing)
+For BDD100K: [imgs](https://bdd-data.berkeley.edu/), [drivable_area_annotations](https://drive.google.com/file/d/1xy_DhUZRHR8yrZG3OwTQAHhYTnXn7URv/view?usp=sharing), [lane_line_annotations](https://drive.google.com/file/d/1lDNTPIQj_YLNZVkksKM25CvCHuquJ8AP/view?usp=sharing)
 
 We recommend the dataset directory structure to be the following:
 
@@ -100,7 +100,7 @@ We recommend the dataset directory structure to be the following:
 │ ├─images
 │ │ ├─train
 │ │ ├─val
-│ ├─drivable_are_annotations
+│ ├─drivable_area_annotations
 │ │ ├─train
 │ │ ├─val
 │ ├─lane_line_annotations

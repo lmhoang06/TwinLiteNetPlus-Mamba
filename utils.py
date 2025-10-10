@@ -54,7 +54,7 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count if self.count != 0 else 0
 
-def poly_lr_scheduler(args, hyp, optimizer, epoch, power=1.5):
+def poly_lr_scheduler(args, hyp, optimizer, epoch, power=1.2):
     lr = round(hyp['lr'] * (1 - epoch / args.max_epochs) ** power, 8)
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
@@ -66,26 +66,60 @@ def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=
     print("epoch: ", epoch)
     total_batches = len(train_loader)
     pbar = enumerate(train_loader)
+    avg_total_loss_meter = AverageMeter()
+    avg_focal_loss_meter = AverageMeter()
+    avg_tversky_loss_meter = AverageMeter()
     if verbose:
         LOGGER.info(('\n' + '%13s' * 4) % ('Epoch','TverskyLoss','FocalLoss' ,'TotalLoss'))
         pbar = tqdm(pbar, total=total_batches, bar_format='{l_bar}{bar:10}{r_bar}')
+
+    accumulation_steps = getattr(args, 'accumulation_steps', 1)
+    accumulation_steps = max(1, int(accumulation_steps))
+    optimizer.zero_grad()
+    micro_step_count = 0
+
     for i, (_,input, target) in pbar:
-        optimizer.zero_grad()
         if args.onGPU == True:
-            input = input.cuda().float() / 255.0        
+            input = input.cuda().float() / 255.0
         output = model(input)
-        with torch.cuda.amp.autocast():
+        with torch.amp.autocast(device_type='cuda'):
             focal_loss,tversky_loss,loss = criterion(output,target)
 
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
-        if ema is not None:
-            ema.update(model)
+        # scale loss for accumulation
+        loss_to_backprop = loss / accumulation_steps
+        scaler.scale(loss_to_backprop).backward()
+        micro_step_count += 1
+
+        # optimizer step on accumulation boundary
+        if micro_step_count % accumulation_steps == 0:
+            scaler.step(optimizer)
+            scaler.update()
+            optimizer.zero_grad()
+            if ema is not None:
+                ema.update(model)
+
+        # track losses
+        try:
+            batch_size = input.size(0)
+        except Exception:
+            batch_size = 1
+        avg_total_loss_meter.update(loss.item(), batch_size)
+        avg_focal_loss_meter.update(float(focal_loss), batch_size)
+        avg_tversky_loss_meter.update(float(tversky_loss), batch_size)
         if verbose:
             pbar.set_description(('%13s' * 1 + '%13.4g' * 3) %
-                                     (f'{epoch}/{300 - 1}', tversky_loss, focal_loss, loss.item()))
-    return ema if ema is not None else None
+                                 (f'{epoch}/{300 - 1}', tversky_loss, focal_loss, loss.item()))
+
+    # final step for leftover micro-steps
+    if micro_step_count % accumulation_steps != 0:
+        scaler.step(optimizer)
+        scaler.update()
+        optimizer.zero_grad()
+        if ema is not None:
+            ema.update(model)
+
+    # return ema (or None) and average losses for the epoch
+    return (ema if ema is not None else None), avg_total_loss_meter.avg, avg_focal_loss_meter.avg, avg_tversky_loss_meter.avg
 
 
 
@@ -205,7 +239,7 @@ def val_one(val_loader = None, model = None, half = False, args=None):
         acc = RE.lineAccuracy()
         IoU = RE.IntersectionOverUnion()
         mIoU = RE.meanIntersectionOverUnion()
-
+        
         acc_seg.update(acc,input.size(0))
         IoU_seg.update(IoU,input.size(0))
         mIoU_seg.update(mIoU,input.size(0))

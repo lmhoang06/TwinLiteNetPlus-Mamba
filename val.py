@@ -53,7 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('--weight', type=str, default="pretrained/large.pth", help='Path to model weights')
     parser.add_argument('--num_workers', type=int, default=12, help='Number of parallel threads')
     parser.add_argument('--batch_size', type=int, default=16, help='Batch size for validation')
-    parser.add_argument('--config', type=str, choices=["nano", "small", "medium", "large"], help='Model configuration')
+    parser.add_argument('--config', type=str, choices=["nano", "small", "medium", "large", "vmamba-tiny", "vmamba-tiny-swiglu"], help='Model configuration')
     parser.add_argument('--hyp', type=str, default='./hyperparameters/twinlitev2_hyper.yaml', help='Path to hyperparameters YAML file')
     parser.add_argument('--half', action='store_true', help='Use half precision for inference')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging')

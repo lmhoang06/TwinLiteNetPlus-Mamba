@@ -1,0 +1,4 @@
+# ninja log v7
+9	10611	1757991207938809439	/home/nimitz/projects/CS311/VMamba/kernels/selective_scan/build/temp.linux-x86_64-cpython-310/csrc/selective_scan/cusoflex/selective_scan_core_fwd.o	287ed6170ad08729
+9	16308	1757991207938809439	/home/nimitz/projects/CS311/VMamba/kernels/selective_scan/build/temp.linux-x86_64-cpython-310/csrc/selective_scan/cusoflex/selective_scan_oflex.o	d2bb2d20af7ee07f
+8	33256	1757991207938809439	/home/nimitz/projects/CS311/VMamba/kernels/selective_scan/build/temp.linux-x86_64-cpython-310/csrc/selective_scan/cusoflex/selective_scan_core_bwd.o	74c3d449047a9d41

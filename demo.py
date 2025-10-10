@@ -57,11 +57,14 @@ def show_seg_result(img, result, index, epoch, save_dir=None, is_ll=False,palett
 def detect(args):
 
     device = "cuda:0"
-    half = True
+    # half = True
+    half = False
     model = TwinLiteNetPlus(args)
     model = model.cuda()
     if half:
         model.half()  # to FP16
+
+    print("Number of parameters: ", netParams(model))
 
     # Set Dataloader
     if args.source.isnumeric():
@@ -81,7 +84,7 @@ def detect(args):
     img = torch.zeros((1, 3, args.img_size, args.img_size), device=device)  # init img
     _ = model(img.half() if half else img) if device != 'cpu' else None  # run once
 
-    model.load_state_dict(torch.load(args.weight))
+    # model.load_state_dict(torch.load(args.weight))
     model.eval()
 
     
@@ -149,7 +152,7 @@ if __name__ == '__main__':
     parser.add_argument('--weight', type=str, default='pretrained/large.pth', help='model.pth path(s)')
     parser.add_argument('--source', type=str, default='inference/videos', help='source')  # file/folder   ex:inference/images
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--config', type=str, choices=["nano", "small", "medium", "large"], help='Model configuration')
+    parser.add_argument('--config', type=str, choices=["nano", "small", "medium", "large", "vmamba-tiny", "vmamba-tiny-swiglu"], help='Model configuration')
     parser.add_argument('--save-dir', type=str, default='inference/output', help='directory to save results')
     opt = parser.parse_args()
     with torch.no_grad():

@@ -39,6 +39,54 @@ def train_net(args, hyp):
     num_gpus = torch.cuda.device_count()
     
     model = SingleLiteNetPlus(args)
+
+    # Load pretrained weights if available for this config
+    pretrained_path = os.path.join('./pretrained', f"{args.config}.pth")
+    if os.path.isfile(pretrained_path):
+        print(f"=> Loading pretrained weights from '{pretrained_path}'")
+        state_dict = torch.load(pretrained_path, map_location='cpu')
+        if 'state_dict' in state_dict:
+            # If checkpoint is a dict with 'state_dict' key
+            state_dict = state_dict['state_dict']
+        # Remove 'module.' prefix if present (from DataParallel)
+        new_state_dict = {}
+        for k, v in state_dict.items():
+            if k.startswith('module.'):
+                new_state_dict[k[7:]] = v
+            else:
+                new_state_dict[k] = v
+        # Filter out keys that are not in the current model and handle decoder naming differences
+        model_state = model.state_dict()
+        filtered_state_dict = {}
+        
+        def map_decoder_key(key, task):
+            """Map decoder keys from 2-head model to single-head model"""
+            if task == "DA" and '_da' in key:
+                # Replace _da with nothing, but handle the full path
+                return key.replace('_da', '')
+            elif task == "LL" and '_ll' in key:
+                # Replace _ll with nothing, but handle the full path  
+                return key.replace('_ll', '')
+            return key
+        
+        for k, v in new_state_dict.items():
+            if k in model_state and v.size() == model_state[k].size():
+                # Direct match
+                filtered_state_dict[k] = v
+            else:
+                # Try mapping decoder keys
+                mapped_key = map_decoder_key(k, args.task)
+                if mapped_key in model_state and v.size() == model_state[mapped_key].size():
+                    filtered_state_dict[mapped_key] = v
+        
+        missing_keys = set(model_state.keys()) - set(filtered_state_dict.keys())
+        unexpected_keys = set(new_state_dict.keys()) - set(filtered_state_dict.keys())
+        model.load_state_dict(filtered_state_dict, strict=False)
+        print(f"=> Pretrained weights loaded. ({len(filtered_state_dict)} matched keys, {len(missing_keys)} missing, {len(unexpected_keys)} unexpected)")
+        if missing_keys:
+            print(f"=> Missing keys: {list(missing_keys)[:5]}{'...' if len(missing_keys) > 5 else ''}")
+        if unexpected_keys:
+            print(f"=> Unexpected keys: {list(unexpected_keys)[:5]}{'...' if len(unexpected_keys) > 5 else ''}")
     # if num_gpus > 1:
     #     model = torch.nn.DataParallel(model)
     
@@ -62,7 +110,25 @@ def train_net(args, hyp):
     criteria = SigleLoss(hyp,task=args.task)
     start_epoch = 0
     lr = hyp['lr']
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, betas=(hyp['momentum'], 0.999), eps=hyp['eps'], weight_decay=hyp['weight_decay'])
+    
+    # For fine-tuning, use different learning rates for different parts
+    if os.path.isfile(pretrained_path):
+        print("=> Fine-tuning mode: Using different learning rates for encoder vs decoder")
+        # Lower learning rate for pretrained encoder, higher for decoder
+        encoder_params = []
+        decoder_params = []
+        for name, param in model.named_parameters():
+            if 'encoder' in name or 'caam' in name:
+                encoder_params.append(param)
+            else:
+                decoder_params.append(param)
+        
+        optimizer = torch.optim.AdamW([
+            {'params': encoder_params, 'lr': lr * 0.2},  # 5x lower for encoder
+            {'params': decoder_params, 'lr': lr}         # Normal lr for decoder
+        ], betas=(hyp['momentum'], 0.999), eps=hyp['eps'], weight_decay=hyp['weight_decay'])
+    else:
+        optimizer = torch.optim.AdamW(model.parameters(), lr=lr, betas=(hyp['momentum'], 0.999), eps=hyp['eps'], weight_decay=hyp['weight_decay'])
     
     ema = ModelEMA(model) if use_ema else None
     
@@ -85,13 +151,26 @@ def train_net(args, hyp):
     
     for epoch in range(start_epoch, args.max_epochs):
         model_file_name = os.path.join(args.savedir, f'model_{epoch}.pth')
-        poly_lr_scheduler(args, hyp, optimizer, epoch)
+        
+        # Warmup for fine-tuning
+        if os.path.isfile(pretrained_path) and epoch < 5:
+            # Warmup: gradually increase learning rate
+            warmup_factor = (epoch + 1) / 5.0
+            for param_group in optimizer.param_groups:
+                if 'encoder' in str(param_group) or 'caam' in str(param_group):
+                    param_group['lr'] = hyp['lr'] * 0.1 * warmup_factor
+                else:
+                    param_group['lr'] = hyp['lr'] * warmup_factor
+        else:
+            poly_lr_scheduler(args, hyp, optimizer, epoch)
+        
         for param_group in optimizer.param_groups:
             lr = param_group['lr']
         print(f"Learning rate: {lr}")
         
         model.train()
         ema = train(args, trainLoader, model, criteria, optimizer, epoch, scaler, args.verbose, ema if use_ema else None)
+        ema = ema[0]
         
         model.eval()
         segment_results = val_one(valLoader, ema.ema if use_ema else model, args=args)
