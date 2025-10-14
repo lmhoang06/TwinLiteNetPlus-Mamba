@@ -1,11 +1,23 @@
-albumentations==1.4.18
-numpy==1.24.4
-opencv-python==4.7.0.72
-matplotlib==3.7.1
-scipy==1.10.1
-scikit-learn==1.2.2
-torch==1.8.0
-torchvision==0.9.0
-tqdm==4.51.0
-pillow==9.5.0
+packaging
+triton
 timm==0.5.4
+pytest 
+chardet 
+yacs 
+termcolor
+submitit 
+tensorboardX
+fvcore
+seaborn
+hydra-core # for s4nd
+pytorch_lightning # for s4nd
+albumentations==1.4.18
+opencv-python==4.11.0.86
+matplotlib<3.8
+scipy
+scikit-learn
+# torch
+# torchvision
+tqdm
+pillow
+numpy==1.26.3

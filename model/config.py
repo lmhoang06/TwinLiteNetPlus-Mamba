@@ -81,6 +81,7 @@ sc_ch_dict = {
             'mlp_act_layer': "silu",
             "subln": True,
     },
+    # tiny-swiglu-v7 version (use encoder v3)
     "vmamba-tiny-swiglu-v3": {  'p': 1, # poly lr power 1.2
             'q': 1, # no accumulation
             'chanels' : [8, 16, 32, 64, 128],
@@ -102,4 +103,25 @@ sc_ch_dict = {
             'mlp_act_layer': "silu",
             "subln": True,
     },
+    "vmamba2-tiny-swiglu-v1": {
+        'p': 1, 'q': 1,
+        'chanels' : [8, 16, 32, 64, 128],
+        'drop_path_rate': 0.15,
+        'norm_layer': "ln2d",
+        'ssm_d_state': 64,
+        'ssm_ratio': 2.0,
+        'ssm_dt_rank': "auto",
+        'ssm_conv': 3,
+        'ssm_conv_bias': False,
+        'ssm_drop_rate': 0.0,
+        'ssm_init': "v2",
+        'forward_type': "m0_noz",
+        'mlp_ratio': 4.0 * 2.0 / 3.0,
+        'mlp_drop_rate': 0.0,
+        'gmlp': False,
+        'use_checkpoint': False,
+        'ssm_act_layer': "gelu",
+        'mlp_act_layer': "silu",
+        "subln": True,
+    }
 }
