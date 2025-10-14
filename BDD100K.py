@@ -142,12 +142,11 @@ class DatasetOneTask(torch.utils.data.Dataset):
     '''
     Class to load the dataset
     '''
-    def __init__(self, hyp, valid=False, transform = None, task = None, cache_ratio=0.0):
+    def __init__(self, hyp, valid=False, transform = None, task = None):
         '''
         :param imList: image list (Note that these lists have been processed and pickled using the loadData.py)
         :param labelList: label list (Note that these lists have been processed and pickled using the loadData.py)
         :param transform: Type of transformation. SEe Transforms.py for supported transformations
-        :param cache_ratio: Portion of dataset to cache in memory (0.0-1.0)
         '''
         self.transform = transform
         self.degrees = hyp["degrees"]
@@ -170,7 +169,6 @@ class DatasetOneTask(torch.utils.data.Dataset):
         
         self.Tensor = transforms.ToTensor()
         self.valid=valid
-        self.cache_ratio = cache_ratio
         
         if valid:
             self.root='/mnt/d/ucr25/dataset/images/val'
@@ -178,45 +176,20 @@ class DatasetOneTask(torch.utils.data.Dataset):
         else:
             self.root='/mnt/d/ucr25/dataset/images/train'
             self.names=os.listdir(self.root)
-        
-        # Initialize cache
-        self.cache = {}
-        self.cached_indices = set()
-        if self.cache_ratio > 0.0:
-            self._initialize_cache()
-
-    def _initialize_cache(self):
-        """Initialize cache by loading a portion of the dataset into memory"""
-        total_samples = len(self.names)
-        num_cached = int(total_samples * self.cache_ratio)
-        
-        if num_cached > 0:
-            # Randomly select indices to cache
-            import random
-            self.cached_indices = set(random.sample(range(total_samples), num_cached))
-            
-            print(f"Caching {num_cached} samples ({self.cache_ratio*100:.1f}% of dataset)...")
-            
-            # Load and cache the selected samples
-            for idx in self.cached_indices:
-                self.cache[idx] = self._load_sample(idx)
-            
-            print(f"Cache initialization complete. {len(self.cache)} samples cached.")
 
     def _load_sample(self, idx):
-        """Load a single sample from disk (used for caching)"""
         W_ = 640
         H_ = 384
         image_name = os.path.join(self.root, self.names[idx])
 
-        # Load raw data for caching
+        # Load raw data
         raw_image = cv2.imread(image_name)
         if self.task == "DA":
             raw_label = cv2.imread(image_name.replace("images", "drivable_area_annotations").replace("jpg", "png"), 0)
         if self.task == "LL":
             raw_label = cv2.imread(image_name.replace("images", "lane_line_annotations").replace("jpg", "png"), 0)
         
-        # Apply basic preprocessing (without augmentation for cached data)
+        # Apply basic preprocessing (without augmentation)
         image = letterbox(raw_image, (H_, W_))
         label = cv2.resize(raw_label, (W_, 360))
         
@@ -248,18 +221,10 @@ class DatasetOneTask(torch.utils.data.Dataset):
         :param idx: Index of the image file
         :return: returns the image and corresponding label file.
         '''
-        # Check if this sample is cached
-        if idx in self.cached_indices:
-            cached_data = self.cache[idx]
-            image_name = cached_data['image_name']
-            image = cached_data['raw_image'].copy()  # Make a copy for augmentation
-            label = cached_data['raw_label'].copy()
-        else:
-            # Load from disk
-            W_ = 640
-            H_ = 384
-            image_name = os.path.join(self.root, self.names[idx])
-
+        # Load from disk
+        W_ = 640
+        H_ = 384
+        image_name = os.path.join(self.root, self.names[idx])
         image = cv2.imread(image_name)
         if self.task == "DA":
             label = cv2.imread(image_name.replace("images","drivable_area_annotations").replace(".jpg","_mask.png"), 0)
@@ -316,12 +281,11 @@ class Dataset(torch.utils.data.Dataset):
     '''
     Class to load the dataset
     '''
-    def __init__(self, hyp, valid=False, transform = None, cache_ratio=0.0):
+    def __init__(self, hyp, valid=False, transform = None):
         '''
         :param imList: image list (Note that these lists have been processed and pickled using the loadData.py)
         :param labelList: label list (Note that these lists have been processed and pickled using the loadData.py)
         :param transform: Type of transformation. SEe Transforms.py for supported transformations
-        :param cache_ratio: Portion of dataset to cache in memory (0.0-1.0)
         '''
         self.transform = transform
         self.degrees = hyp["degrees"]
@@ -342,7 +306,6 @@ class Dataset(torch.utils.data.Dataset):
         
         self.Tensor = transforms.ToTensor()
         self.valid=valid
-        self.cache_ratio = cache_ratio
         
         if valid:
             self.root='/mnt/d/CS311/bdd100k/images/val'
@@ -350,43 +313,18 @@ class Dataset(torch.utils.data.Dataset):
         else:
             self.root='/mnt/d/CS311/bdd100k/images/train'
             self.names=os.listdir(self.root)
-        
-        # Initialize cache
-        self.cache = {}
-        self.cached_indices = set()
-        if self.cache_ratio > 0.0:
-            self._initialize_cache()
-
-    def _initialize_cache(self):
-        """Initialize cache by loading a portion of the dataset into memory"""
-        total_samples = len(self.names)
-        num_cached = int(total_samples * self.cache_ratio)
-        
-        if num_cached > 0:
-            # Randomly select indices to cache
-            import random
-            self.cached_indices = set(random.sample(range(total_samples), num_cached))
-            
-            print(f"Caching {num_cached} samples ({self.cache_ratio*100:.1f}% of dataset)...")
-            
-            # Load and cache the selected samples
-            for idx in self.cached_indices:
-                self.cache[idx] = self._load_sample(idx)
-            
-            print(f"Cache initialization complete. {len(self.cache)} samples cached.")
 
     def _load_sample(self, idx):
-        """Load a single sample from disk (used for caching)"""
         W_ = 640
         H_ = 384
         image_name = os.path.join(self.root, self.names[idx])
 
-        # Load raw data for caching
+        # Load raw data
         raw_image = cv2.imread(image_name)
         raw_label1 = cv2.imread(image_name.replace("images", "drivable_area_annotations").replace("jpg", "png"), 0)
         raw_label2 = cv2.imread(image_name.replace("images", "lane_line_annotations").replace("jpg", "png"), 0)
         
-        # Apply basic preprocessing (without augmentation for cached data)
+        # Apply basic preprocessing (without augmentation)
         image = letterbox(raw_image, (H_, W_))
         label1 = cv2.resize(raw_label1, (W_, 360))
         label2 = cv2.resize(raw_label2, (W_, 360))
@@ -426,22 +364,13 @@ class Dataset(torch.utils.data.Dataset):
         :param idx: Index of the image file
         :return: returns the image and corresponding label file.
         '''
-        # Check if this sample is cached
-        if idx in self.cached_indices:
-            cached_data = self.cache[idx]
-            image_name = cached_data['image_name']
-            image = cached_data['raw_image'].copy()  # Make a copy for augmentation
-            label1 = cached_data['raw_label1'].copy()
-            label2 = cached_data['raw_label2'].copy()
-        else:
-            # Load from disk
-            W_ = 640
-            H_ = 384
-            image_name = os.path.join(self.root, self.names[idx])
-
-            image = cv2.imread(image_name)
-            label1 = cv2.imread(image_name.replace("images", "drivable_area_annotations").replace("jpg", "png"), 0)
-            label2 = cv2.imread(image_name.replace("images", "lane_line_annotations").replace("jpg", "png"), 0)
+        # Load from disk
+        W_ = 640
+        H_ = 384
+        image_name = os.path.join(self.root, self.names[idx])
+        image = cv2.imread(image_name)
+        label1 = cv2.imread(image_name.replace("images", "drivable_area_annotations").replace("jpg", "png"), 0)
+        label2 = cv2.imread(image_name.replace("images", "lane_line_annotations").replace("jpg", "png"), 0)
         
         # Apply augmentations for training data
         if not self.valid:

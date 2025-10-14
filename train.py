@@ -62,11 +62,11 @@ def train_net(args, hyp):
             ])
     
     trainLoader = torch.utils.data.DataLoader(
-        BDD100K.Dataset(hyp, valid=False, cache_ratio=args.cache_ratio),
+        BDD100K.Dataset(hyp, valid=False),
         batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
     
     valLoader = torch.utils.data.DataLoader(
-        BDD100K.Dataset(hyp, valid=True, cache_ratio=args.cache_ratio),
+        BDD100K.Dataset(hyp, valid=True),
         batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
     
     if cuda_available:
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging')
     parser.add_argument('--ema', action='store_true', help='Use Exponential Moving Average (EMA)')
     parser.add_argument('--accumulation_steps', type=int, default=1, help='Gradient accumulation steps')
-    parser.add_argument('--cache_ratio', type=float, default=0.0, help='Portion of dataset to cache in memory (0.0-1.0)')
+
     args = parser.parse_args()
     
     with open(args.hyp, errors='ignore') as f:
