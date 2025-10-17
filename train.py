@@ -137,6 +137,11 @@ def train_net(args, hyp):
             'lr': lr
         }, os.path.join(args.savedir, 'checkpoint.pth.tar'))
 
+        # Stop after completing the specified epoch index (0-based); negative disables
+        if args.stop_epoch is not None and args.stop_epoch >= 0 and epoch >= args.stop_epoch:
+            print(f"Reached stop_epoch={args.stop_epoch}. Stopping training.")
+            break
+
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--max_epochs', type=int, default=100, help='Max number of epochs')
@@ -149,6 +154,7 @@ if __name__ == '__main__':
     parser.add_argument('--verbose', action='store_true', help='Enable verbose logging')
     parser.add_argument('--ema', action='store_true', help='Use Exponential Moving Average (EMA)')
     parser.add_argument('--accumulation_steps', type=int, default=1, help='Gradient accumulation steps')
+    parser.add_argument('--stop_epoch', type=int, default=-1, help='Zero-based epoch index to stop after completing; negative disables')
 
     args = parser.parse_args()
     
