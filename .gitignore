@@ -1,3 +1,4 @@
 pretrained/
 test*/
 __pycache__/
+inference/

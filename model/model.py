@@ -9,6 +9,8 @@ from .encoder import Encoder
 from .encoder import Encoder_V1 as Encoder_VMamba
 from .encoder import Encoder_V2 as Encoder_VMamba_V2
 from .encoder import Encoder_V3 as Encoder_VMamba_V3
+from .encoder import Encoder_Vmamba2
+from .encoder import LightweightEncoder
 
 
 
@@ -157,6 +159,25 @@ class ConvBatchnormRelu(nn.Module):
         return output
 
 
+class ConvBatchnormReluFactorial(nn.Module):
+    def __init__(self, nIn, nOut, kSize=3, stride=1, groups=1,dropout_rate=0.0):
+        super().__init__()
+        padding = int((kSize - 1) / 2)
+        self.conv1 = nn.Conv2d(nIn, nOut, (kSize, 1), stride=stride, padding=(padding, 0), bias=False, groups=groups)
+        self.conv2 = nn.Conv2d(nOut, nOut, (1, kSize), stride=stride, padding=(0, padding), bias=False, groups=groups)
+        self.bn = nn.BatchNorm2d(nOut)
+        self.act = nn.PReLU(nOut)
+        self.dropout = nn.Dropout2d(dropout_rate) if dropout_rate > 0 else None
+
+    def forward(self, input):
+        output = self.conv2(self.conv1(input))
+        output = self.bn(output)
+        output = self.act(output)
+        if self.dropout:
+            output = self.dropout(output)
+        return output
+
+
 # class C(nn.Module):
 #     '''
 #     This class is for a convolutional layer.
@@ -213,6 +234,15 @@ class UpConvBlock(nn.Module):
         x = self.conv2(x)
         return x
 
+
+class UpConvBlockFactorial(UpConvBlock):
+    def __init__(self, in_channels, out_channels, sub_dim=3, last=False, kernel_size = 3):
+        super(UpConvBlockFactorial, self).__init__(in_channels, out_channels, sub_dim, last, kernel_size)
+        if not last:
+            self.conv1 = ConvBatchnormReluFactorial(out_channels+sub_dim,out_channels,kernel_size)
+        self.conv2 = ConvBatchnormReluFactorial(out_channels,out_channels,kernel_size)
+
+
 class SingleLiteNetPlus(nn.Module):
     '''
     This class defines the ESPNet network
@@ -264,7 +294,7 @@ class TwinLiteNetPlus(nn.Module):
         chanel_img = cfg.chanel_img
         model_cfg = cfg.sc_ch_dict[args.config] 
         # self.encoder = Encoder(args.config)
-        self.encoder = Encoder_VMamba_V2(args.config)
+        self.encoder = Encoder(args.config)
         self.sigle_ll = False
         self.sigle_da = False
 
@@ -307,6 +337,23 @@ class TwinLiteNetPlus_V3(TwinLiteNetPlus):
         super().__init__(args)
         self.encoder = Encoder_VMamba_V3(args.config)
 
+class TwinLiteNetPlus_Vmamba2(TwinLiteNetPlus):
+    def __init__(self, args=None):
+        super().__init__(args)
+        self.encoder = Encoder_Vmamba2(args.config)
+
 def netParams(model):
     return np.sum([np.prod(parameter.size()) for parameter in model.parameters()])
-import time
+
+class TwinLiteNetPlus_Lightweight(TwinLiteNetPlus):
+    def __init__(self, args=None):
+        super().__init__(args)
+        self.encoder = LightweightEncoder(args.config)
+
+        self.up_1_da = UpConvBlockFactorial(cfg.sc_ch_dict[args.config]['chanels'][1],cfg.sc_ch_dict[args.config]['chanels'][0]) # out: Hx4, Wx4
+        self.up_2_da = UpConvBlockFactorial(cfg.sc_ch_dict[args.config]['chanels'][0],8) #out: Hx2, Wx2
+        self.out_da = UpConvBlockFactorial(8,2,last=True)  
+
+        self.up_1_ll = UpConvBlockFactorial(cfg.sc_ch_dict[args.config]['chanels'][1],cfg.sc_ch_dict[args.config]['chanels'][0]) # out: Hx4, Wx4
+        self.up_2_ll = UpConvBlockFactorial(cfg.sc_ch_dict[args.config]['chanels'][0],8) #out: Hx2, Wx2
+        self.out_ll = UpConvBlockFactorial(8,2,last=True)

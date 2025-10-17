@@ -2,22 +2,25 @@ import torch
 import torch.backends.cudnn as cudnn
 from argparse import ArgumentParser
 
-from model.model import TwinLiteNetPlus, TwinLiteNetPlus_V3
+from model.model import TwinLiteNetPlus, TwinLiteNetPlus_Lightweight, TwinLiteNetPlus_V3, TwinLiteNetPlus_Vmamba2
 from demoDataset import LoadImages, LoadStreams
 from tqdm import tqdm
 import time
 from utils import netParams
+from utils import count_flops_and_params
 
 def detect(args):
 
     device = "cuda:0"
-    half = True
-    # half = False
-    model = TwinLiteNetPlus_V3(args)
-    
-    print(f'Total network parameters: {netParams(model)}')
-
+    # half = True
+    half = False
+    model = TwinLiteNetPlus_Vmamba2(args)
     model = model.cuda()
+    
+    flops, params = count_flops_and_params(model)
+    print(f'Total network GFlops: {flops / 1e9}')
+    print(f'Total network parameters: {params}')
+
     if half:
         model.half()  # to FP16
 
@@ -59,7 +62,7 @@ if __name__ == '__main__':
     # parser.add_argument('--weight', type=str, default='pretrained/large.pth', help='model.pth path(s)')
     parser.add_argument('--source', type=str, default='inference/videos', help='source')  # file/folder   ex:inference/images
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--config', type=str, choices=["nano", "small", "medium", "large", "vmamba-tiny", "vmamba-tiny-swiglu", "vmamba-tiny-swiglu-v3"], help='Model configuration')
+    parser.add_argument('--config', type=str, help='Model configuration')
     opt = parser.parse_args()
     with torch.no_grad():
         detect(opt)

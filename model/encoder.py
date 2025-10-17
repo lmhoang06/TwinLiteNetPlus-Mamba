@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn.functional as F
 from model import config as cfg 
 # import matplotlib.pyplot as plt
-from .esp import StrideESP, DepthwiseESP, StrideESPFactorial
+from .esp import StrideESP, DepthwiseESP, StrideESPFactorial, DepthwiseESPFactorial
 from .vmamba.models.vmamba import VSSBlock, SS2D, LayerNorm2d, SwiGLU
 
 
@@ -138,6 +138,24 @@ class Encoder(nn.Module):
         out_encoder = self.b3(output2_cat)
         
         return out_encoder,inp1,inp2
+
+
+class LightweightEncoder(Encoder):
+    def __init__(self, config):
+        super().__init__(config)
+        chanel_img = cfg.chanel_img
+        model_cfg = cfg.sc_ch_dict[config] 
+
+        self.level2_0 = StrideESPFactorial(model_cfg['chanels'][1], model_cfg['chanels'][2])
+
+        self.level2 = nn.ModuleList()
+        for i in range(0, model_cfg['p']):
+            self.level2.append(DepthwiseESPFactorial(model_cfg['chanels'][2] , model_cfg['chanels'][2]))
+
+        self.level3_0 = StrideESPFactorial(model_cfg['chanels'][3] + chanel_img, model_cfg['chanels'][3])
+        self.level3 = nn.ModuleList()
+        for i in range(0, model_cfg['q']):
+            self.level3.append(DepthwiseESPFactorial(model_cfg['chanels'][3] , model_cfg['chanels'][3]))
 
 
 class Encoder_V1(Encoder):
@@ -425,3 +443,35 @@ class Encoder_V3(Encoder_V2):
         model_cfg = cfg.sc_ch_dict[config]
         self.level2_0 = StrideESPFactorial(model_cfg['chanels'][1], model_cfg['chanels'][2])
         self.level3_0 = StrideESPFactorial(model_cfg['chanels'][3] + chanel_img, model_cfg['chanels'][3])
+
+class Encoder_Vmamba2(Encoder_V2):
+    def forward(self, input):
+        '''
+        :param input: Receives the input RGB image
+        :return: the transformed feature map with spatial dimensions 1/8th of the input image
+        '''
+        output0 = self.level1(input)
+        inp1 = self.sample1(input)
+        inp2 = self.sample2(input)
+        output0_cat = self.b1(torch.cat([output0, inp1], 1))
+        output1_0 = self.level2_0(output0_cat) # down-sampled
+        
+        output1 = output1_0.clone()
+        output1 = output1.permute(0, 2, 3, 1).contiguous() # (N, C, H, W) -> (N, H, W, C)
+        for i, layer in enumerate(self.level2):
+            output1 = layer(output1)
+        output1 = output1.permute(0, 3, 1, 2).contiguous() # (N, H, W, C) -> (N, C, H, W)
+
+        output1_cat = self.b2(torch.cat([output1,  output1_0, inp2], 1))
+        output2_0 = self.level3_0(output1_cat)
+
+        output2 = output2_0.clone()
+        output2 = output2.permute(0, 2, 3, 1).contiguous() # (N, C, H, W) -> (N, H, W, C)
+        for i, layer in enumerate(self.level3):
+            output2 = layer(output2)
+        output2 = output2.permute(0, 3, 1, 2).contiguous() # (N, H, W, C) -> (N, C, H, W) 
+        
+        output2_cat=torch.cat([output2_0, output2], 1)
+        out_encoder = self.b3(output2_cat)
+        
+        return out_encoder,inp1,inp2

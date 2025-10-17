@@ -255,3 +255,26 @@ def save_checkpoint(state, filenameCheckpoint='checkpoint.pth.tar'):
 
 def netParams(model):
     return np.sum([np.prod(parameter.size()) for parameter in model.parameters()])
+
+def count_flops_and_params(model, input_size=(1, 3, 640, 640)):
+    """
+    Estimates the number of FLOPs (floating point operations) required for a single forward pass of the model using thop.
+    Args:
+        model (torch.nn.Module): the model to be evaluated
+        input_size (tuple): input size as (batch, channels, height, width)
+    Returns:
+        total_flops (int): estimated number of FLOPs
+    """
+    try:
+        from thop import profile
+    except ImportError:
+        raise ImportError("THOP is not installed. Please install with: pip install thop")
+
+    device = next(model.parameters()).device
+    dummy_input = torch.zeros(input_size).to(device)
+    model.eval()
+    with torch.no_grad():
+        macs, params = profile(model, inputs=(dummy_input,), verbose=False)
+    # THOP returns MACs, 1 MAC = 2 FLOPs (multiply and accumulate)
+    total_flops = macs * 2
+    return int(total_flops), int(params)

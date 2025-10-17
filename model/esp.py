@@ -69,6 +69,30 @@ class DepthwiseSeparableConv(nn.Module):
         return x
 
 
+class DepthwiseSeparableConvFactorial(nn.Module):
+    def __init__(self, nin, nout, kernel_size=3, stride=1, dilation=1):
+        super(DepthwiseSeparableConvFactorial, self).__init__()
+
+        padding = int((kernel_size - 1) / 2) * dilation
+        # Vertical convolution (k x 1)
+        self.depthwise_v = nn.Conv2d(nin, nin, kernel_size=(kernel_size, 1), 
+                                     stride=stride, padding=(padding, 0), 
+                                     dilation=dilation, groups=nin, bias=False)
+        
+        # Horizontal convolution (1 x k)
+        self.depthwise_h = nn.Conv2d(nin, nin, kernel_size=(1, kernel_size), 
+                                     stride=stride, padding=(0, padding), 
+                                     dilation=dilation, groups=nin, bias=False)
+
+        self.pointwise = nn.Conv2d(nin, nout, 1, 1, 0, 1, 1, bias=False)
+
+    def forward(self, x):
+        x = self.depthwise_v(x)
+        x = self.depthwise_h(x)
+        x = self.pointwise(x)
+        return x
+
+
 class StrideESP(nn.Module):
     def __init__(self, nIn, nOut):
         super().__init__()
@@ -151,6 +175,19 @@ class DepthwiseESP(nn.Module):
             combine = input + combine
         output = self.bn(combine)
         return output
+
+
+class DepthwiseESPFactorial(DepthwiseESP):
+    def __init__(self, nIn, nOut, add=True):
+        super().__init__(nIn, nOut, add)
+        n = max(int(nOut/5),1)
+        n1 = max(nOut - 4*n,1)
+        self.c1 = DepthwiseSeparableConvFactorial(nIn, n, 1, 1)
+        self.d1 = DepthwiseSeparableConvFactorial(n, n1, 3, 1, 1)
+        self.d2 = DepthwiseSeparableConvFactorial(n, n, 3, 1, 2)
+        self.d4 = DepthwiseSeparableConvFactorial(n, n, 3, 1, 4)
+        self.d8 = DepthwiseSeparableConvFactorial(n, n, 3, 1, 8)
+        self.d16 = DepthwiseSeparableConvFactorial(n, n, 3, 1, 16)
 
 
 class DilatedConvFactorial(nn.Module):

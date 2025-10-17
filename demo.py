@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 import cv2
 
-from model.model import TwinLiteNetPlus
+from model.model import TwinLiteNetPlus, TwinLiteNetPlus_Lightweight
 from utils import val, netParams
 from loss import TotalLoss
 from demoDataset import LoadImages, LoadStreams
@@ -59,7 +59,7 @@ def detect(args):
     device = "cuda:0"
     # half = True
     half = False
-    model = TwinLiteNetPlus(args)
+    model = TwinLiteNetPlus_Lightweight(args)
     model = model.cuda()
     if half:
         model.half()  # to FP16
@@ -152,7 +152,7 @@ if __name__ == '__main__':
     parser.add_argument('--weight', type=str, default='pretrained/large.pth', help='model.pth path(s)')
     parser.add_argument('--source', type=str, default='inference/videos', help='source')  # file/folder   ex:inference/images
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--config', type=str, choices=["nano", "small", "medium", "large", "vmamba-tiny", "vmamba-tiny-swiglu"], help='Model configuration')
+    parser.add_argument('--config', type=str, help='Model configuration')
     parser.add_argument('--save-dir', type=str, default='inference/output', help='directory to save results')
     opt = parser.parse_args()
     with torch.no_grad():
