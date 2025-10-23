@@ -171,10 +171,10 @@ class DatasetOneTask(torch.utils.data.Dataset):
         self.valid=valid
         
         if valid:
-            self.root='/mnt/d/ucr25/dataset/images/val'
+            self.root='../ucr25/dataset/images/val'
             self.names=os.listdir(self.root)
         else:
-            self.root='/mnt/d/ucr25/dataset/images/train'
+            self.root='../ucr25/dataset/images/train'
             self.names=os.listdir(self.root)
 
     def _load_sample(self, idx):
@@ -275,7 +275,9 @@ class DatasetOneTask(torch.utils.data.Dataset):
         image = image[:, :, ::-1].transpose(2, 0, 1)
         image = np.ascontiguousarray(image)
 
-        return image_name,torch.from_numpy(image),seg_out
+        image_tensor = torch.from_numpy(image).float() / 255.0
+
+        return image_name, image_tensor, seg_out
 
 class Dataset(torch.utils.data.Dataset):
     '''
@@ -308,10 +310,10 @@ class Dataset(torch.utils.data.Dataset):
         self.valid=valid
         
         if valid:
-            self.root='/mnt/d/CS311/bdd100k/images/val'
+            self.root='../bdd100k/images/val'
             self.names=os.listdir(self.root)
         else:
-            self.root='/mnt/d/CS311/bdd100k/images/train'
+            self.root='../bdd100k/images/train'
             self.names=os.listdir(self.root)
 
     def _load_sample(self, idx):
@@ -423,5 +425,7 @@ class Dataset(torch.utils.data.Dataset):
         image = image[:, :, ::-1].transpose(2, 0, 1)
         image = np.ascontiguousarray(image)
 
-        return image_name, torch.from_numpy(image), (seg_da, seg_ll)
+        image_tensor = torch.from_numpy(image).float() / 255.0
+
+        return image_name, image_tensor, (seg_da, seg_ll)
 

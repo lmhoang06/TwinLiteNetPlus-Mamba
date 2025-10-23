@@ -80,7 +80,7 @@ def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=
 
     for i, (_,input, target) in pbar:
         if args.onGPU == True:
-            input = input.cuda().float() / 255.0
+            input = input.cuda()
         output = model(input)
         with torch.amp.autocast(device_type='cuda'):
             focal_loss,tversky_loss,loss = criterion(output,target)
@@ -145,7 +145,7 @@ def val(val_loader = None, model = None, half = False, args=None):
     if args.verbose:
         pbar = tqdm(pbar, total=total_batches)
     for i, (_,input, target) in pbar:
-        input = input.cuda().half() / 255.0 if half else input.cuda().float() / 255.0
+        input = input.half().cuda() if half else input.cuda()
         
         input_var = input
         target_var = target
@@ -217,7 +217,7 @@ def val_one(val_loader = None, model = None, half = False, args=None):
     if args.verbose:
         pbar = tqdm(pbar, total=total_batches)
     for i, (_,input, target) in pbar:
-        input = input.cuda().half() / 255.0 if half else input.cuda().float() / 255.0
+        input = input.half().cuda() if half else input.cuda()
         
         input_var = input
         target_var = target

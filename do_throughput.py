@@ -45,7 +45,7 @@ def detect(args):
     for i, (path, img, img_det, vid_cap,shapes) in tqdm(enumerate(dataset),total = len(dataset)):
         if img.ndimension() == 3:
             img = img.unsqueeze(0)
-        img = img.cuda().half() / 255.0 if half else img.cuda().float() / 255.0
+        img = img.half().cuda() if half else img.cuda()
 
 
         # _, _, height, width = img.shape
