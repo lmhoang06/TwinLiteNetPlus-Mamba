@@ -61,7 +61,7 @@ def poly_lr_scheduler(args, hyp, optimizer, epoch, power=1.2):
     return lr
 
 
-def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=False,ema=None):
+def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=False,ema=None,log_interval=50):
     model.train()
     print("epoch: ", epoch)
     total_batches = len(train_loader)
@@ -77,6 +77,10 @@ def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=
     accumulation_steps = max(1, int(accumulation_steps))
     optimizer.zero_grad()
     micro_step_count = 0
+
+    batch_total_loss_gpu = torch.tensor(0.0, device='cuda')
+    batch_focal_loss_gpu = torch.tensor(0.0, device='cuda')
+    batch_tversky_loss_gpu = torch.tensor(0.0, device='cuda')
 
     for i, (_,input, target) in pbar:
         if args.onGPU == True:
@@ -103,12 +107,23 @@ def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=
             batch_size = input.size(0)
         except Exception:
             batch_size = 1
-        avg_total_loss_meter.update(loss.item(), batch_size)
-        avg_focal_loss_meter.update(float(focal_loss), batch_size)
-        avg_tversky_loss_meter.update(float(tversky_loss), batch_size)
-        if verbose:
+        # avg_total_loss_meter.update(loss.item(), batch_size)
+        # avg_focal_loss_meter.update(float(focal_loss), batch_size)
+        # avg_tversky_loss_meter.update(float(tversky_loss), batch_size)
+
+        batch_total_loss_gpu += loss.detach()
+        batch_focal_loss_gpu += focal_loss.detach()
+        batch_tversky_loss_gpu += tversky_loss.detach()
+
+        if verbose and (i + 1) % log_interval == 0:
+            # pbar.set_description(('%13s' * 1 + '%13.4g' * 3) %
+            #                      (f'{epoch}/{300 - 1}', tversky_loss, focal_loss, loss.item()))
+            current_avg_focal = batch_focal_loss_gpu.item() / (i + 1)
+            current_avg_tversky = batch_tversky_loss_gpu.item() / (i + 1)
+            current_avg_total = batch_total_loss_gpu.item() / (i + 1)
+            
             pbar.set_description(('%13s' * 1 + '%13.4g' * 3) %
-                                 (f'{epoch}/{300 - 1}', tversky_loss, focal_loss, loss.item()))
+                                  (f'{epoch}/{args.max_epochs - 1}', current_avg_tversky, current_avg_focal, current_avg_total))
 
     # final step for leftover micro-steps
     if micro_step_count % accumulation_steps != 0:
@@ -118,8 +133,13 @@ def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=
         if ema is not None:
             ema.update(model)
 
+    final_avg_total = batch_total_loss_gpu.item() / total_batches
+    final_avg_focal = batch_focal_loss_gpu.item() / total_batches
+    final_avg_tversky = batch_tversky_loss_gpu.item() / total_batches
+
     # return ema (or None) and average losses for the epoch
-    return (ema if ema is not None else None), avg_total_loss_meter.avg, avg_focal_loss_meter.avg, avg_tversky_loss_meter.avg
+    # return (ema if ema is not None else None), avg_total_loss_meter.avg, avg_focal_loss_meter.avg, avg_tversky_loss_meter.avg
+    return (ema if ema is not None else None), final_avg_total, final_avg_focal, final_avg_tversky
 
 
 

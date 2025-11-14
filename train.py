@@ -8,7 +8,7 @@ from copy import deepcopy
 from argparse import ArgumentParser
 import csv
 
-from model.model import TwinLiteNetPlus, TwinLiteNetPlus_V3, TwinLiteNetPlus_Vmamba, TwinLiteNetPlus_Lightweight
+from model.model import TwinLiteNetPlus, TwinLiteNetPlus_V3, TwinLiteNetPlus_Lightweight
 from loss import TotalLoss
 from utils import train, val, netParams, save_checkpoint, poly_lr_scheduler
 import BDD100K
