@@ -8,7 +8,7 @@ from copy import deepcopy
 from argparse import ArgumentParser
 import csv
 
-from model.model import TwinLiteNetPlus, TwinLiteNetPlus_V3, TwinLiteNetPlus_Lightweight
+from model.model import TwinLiteNetPlus, TwinLiteNetPlus_V3, TwinLiteNetPlus_Lightweight, TwinLiteNetPlus_Vmamba2_V4, TwinLiteNetPlus_ConvNextV2
 from loss import TotalLoss
 from utils import train, val, netParams, save_checkpoint, poly_lr_scheduler
 import BDD100K
@@ -39,7 +39,7 @@ def train_net(args, hyp):
     cuda_available = torch.cuda.is_available()
     num_gpus = torch.cuda.device_count()
     
-    model = TwinLiteNetPlus_Lightweight(args)
+    model = TwinLiteNetPlus_ConvNextV2(args)
     # pretrained_dict = torch.load('./pretrained/small.pth')
     # model_dict = model.state_dict()
     # # Only keep keys that exist in both model and pretrained weights

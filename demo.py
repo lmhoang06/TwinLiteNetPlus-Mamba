@@ -83,7 +83,7 @@ def detect(args):
     vid_path, vid_writer = None, None
     img = torch.zeros((1, 3, args.img_size, args.img_size), device=device)  # init img
     _ = model(img.half() if half else img) if device != 'cpu' else None  # run once
-
+    print(half)
     # model.load_state_dict(torch.load(args.weight))
     model.eval()
 

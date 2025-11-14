@@ -2,7 +2,7 @@ import torch
 import torch.backends.cudnn as cudnn
 from argparse import ArgumentParser
 
-from model.model import TwinLiteNetPlus, TwinLiteNetPlus_Lightweight, TwinLiteNetPlus_V3, TwinLiteNetPlus_Vmamba2
+from model.model import TwinLiteNetPlus, TwinLiteNetPlus_Lightweight, TwinLiteNetPlus_V3, TwinLiteNetPlus_Vmamba2, TwinLiteNetPlus_ConvNextV2
 from demoDataset import LoadImages, LoadStreams
 from tqdm import tqdm
 import time
@@ -14,8 +14,8 @@ def detect(args):
     device = "cuda:0"
     # half = True
     half = False
-    model = TwinLiteNetPlus_Vmamba2(args)
-    model = model.cuda()
+    model = TwinLiteNetPlus_ConvNextV2(args)
+    model.eval().cuda()
     
     flops, params = count_flops_and_params(model)
     print(f'Total network GFlops: {flops / 1e9}')
@@ -35,12 +35,10 @@ def detect(args):
     # Run inference
     t0 = time.time()
 
+    # model.load_state_dict(torch.load(args.weight))
+
     img = torch.zeros((1, 3, args.img_size, args.img_size), device=device)  # init img
     _ = model(img.half() if half else img) if device != 'cpu' else None  # run once
-
-    # model.load_state_dict(torch.load(args.weight))
-    model.eval()
-
     
     for i, (path, img, img_det, vid_cap,shapes) in tqdm(enumerate(dataset),total = len(dataset)):
         if img.ndimension() == 3:

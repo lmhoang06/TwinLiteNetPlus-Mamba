@@ -132,7 +132,7 @@ class LoadImages:  # for inference
         img = np.array(img)
         img = img[:, :, ::-1].transpose(2, 0, 1)
         img = np.ascontiguousarray(img)
-        img = torch.from_numpy(img)
+        img = torch.from_numpy(img).float() / 255.0
 
 
         # cv2.imwrite(path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
@@ -224,7 +224,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
         img = np.array(img)
         img = img[:, :, ::-1].transpose(2, 0, 1)
         img = np.ascontiguousarray(img)
-        img = torch.from_numpy(img)
+        img = torch.from_numpy(img).float() / 255.0
 
         return self.sources, img, img0[0], None, shapes
 

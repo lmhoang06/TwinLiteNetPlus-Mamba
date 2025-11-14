@@ -11,6 +11,7 @@ from const import *
 import yaml
 import matplotlib
 import matplotlib.pyplot as plt
+from torch.autograd.profiler import profile, record_function, ProfilerActivity
 
 
 LOGGING_NAME="custom"
@@ -81,7 +82,7 @@ def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=
     batch_total_loss_gpu = torch.tensor(0.0, device='cuda')
     batch_focal_loss_gpu = torch.tensor(0.0, device='cuda')
     batch_tversky_loss_gpu = torch.tensor(0.0, device='cuda')
-
+    # with profile(use_device='cuda', record_shapes=True, with_stack=True) as prof:
     for i, (_,input, target) in pbar:
         if args.onGPU == True:
             input = input.cuda()
@@ -102,12 +103,15 @@ def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=
             if ema is not None:
                 ema.update(model)
 
+        if (i + 1) % 10 == 0:
+            break
+
         # track losses
-        try:
-            batch_size = input.size(0)
-        except Exception:
-            batch_size = 1
-        # avg_total_loss_meter.update(loss.item(), batch_size)
+        # try:
+        #     batch_size = input.size(0)
+        # except Exception:
+        #     batch_size = 1
+        # # avg_total_loss_meter.update(loss.item(), batch_size)
         # avg_focal_loss_meter.update(float(focal_loss), batch_size)
         # avg_tversky_loss_meter.update(float(tversky_loss), batch_size)
 
@@ -123,7 +127,7 @@ def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=
             current_avg_total = batch_total_loss_gpu.item() / (i + 1)
             
             pbar.set_description(('%13s' * 1 + '%13.4g' * 3) %
-                                  (f'{epoch}/{args.max_epochs - 1}', current_avg_tversky, current_avg_focal, current_avg_total))
+                                (f'{epoch}/{args.max_epochs - 1}', current_avg_tversky, current_avg_focal, current_avg_total))
 
     # final step for leftover micro-steps
     if micro_step_count % accumulation_steps != 0:
@@ -132,10 +136,11 @@ def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=
         optimizer.zero_grad()
         if ema is not None:
             ema.update(model)
-
+            
     final_avg_total = batch_total_loss_gpu.item() / total_batches
     final_avg_focal = batch_focal_loss_gpu.item() / total_batches
     final_avg_tversky = batch_tversky_loss_gpu.item() / total_batches
+    # print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=30))
 
     # return ema (or None) and average losses for the epoch
     # return (ema if ema is not None else None), avg_total_loss_meter.avg, avg_focal_loss_meter.avg, avg_tversky_loss_meter.avg
@@ -276,7 +281,7 @@ def save_checkpoint(state, filenameCheckpoint='checkpoint.pth.tar'):
 def netParams(model):
     return np.sum([np.prod(parameter.size()) for parameter in model.parameters()])
 
-def count_flops_and_params(model, input_size=(1, 3, 640, 640)):
+def count_flops_and_params(model, input_size=(1, 3, 384, 640)):
     """
     Estimates the number of FLOPs (floating point operations) required for a single forward pass of the model using thop.
     Args:
