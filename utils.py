@@ -103,9 +103,6 @@ def train(args, train_loader, model, criterion, optimizer, epoch,scaler,verbose=
             if ema is not None:
                 ema.update(model)
 
-        if (i + 1) % 10 == 0:
-            break
-
         # track losses
         # try:
         #     batch_size = input.size(0)
